@@ -54,6 +54,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    implementation("com.slack.circuit:circuit-foundation:0.29.1")
+
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 

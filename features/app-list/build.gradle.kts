@@ -54,4 +54,5 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("com.google.accompanist:accompanist-drawablepainter:0.32.0")
+    implementation("com.slack.circuit:circuit-foundation:0.29.1")
 }
