@@ -21,5 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "SimpleLauncher"
 include(":app")
+include(":ui")
 include(":features:app-list")
  
