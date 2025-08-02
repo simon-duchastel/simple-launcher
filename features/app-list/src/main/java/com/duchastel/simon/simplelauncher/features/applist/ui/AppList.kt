@@ -12,10 +12,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.duchastel.simon.simplelauncher.features.applist.data.AppInfo
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
@@ -34,7 +34,7 @@ fun AppList(state: AppListState) {
                     .padding(16.dp)
             ) {
                 Image(
-                    painter = rememberDrawablePainter(drawable = app.icon),
+                    painter = remember(app.icon) { DrawableP }(drawable = app.icon),
                     contentDescription = null,
                     modifier = Modifier.size(48.dp)
                 )
