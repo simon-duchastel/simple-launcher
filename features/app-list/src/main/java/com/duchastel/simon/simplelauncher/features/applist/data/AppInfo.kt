@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.features.applist.ui
+package com.duchastel.simon.simplelauncher.features.applist.data
 
 import android.graphics.drawable.Drawable
 
