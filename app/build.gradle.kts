@@ -36,6 +36,11 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    configurations.all {
+        resolutionStrategy {
+            force("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.6.0")
+        }
+    }
     buildFeatures {
         compose = true
     }

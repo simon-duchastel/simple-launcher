@@ -18,7 +18,11 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class AppListScreen : Screen
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+class AppListScreen : Screen, Parcelable
 
 data class AppListState(
     val apps: ImmutableList<AppInfo>,

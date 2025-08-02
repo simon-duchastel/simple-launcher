@@ -6,7 +6,12 @@ import com.duchastel.simon.simplelauncher.features.applist.data.AppRepositoryImp
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListPresenter
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
 import com.slack.circuit.foundation.Circuit
+import com.duchastel.simon.simplelauncher.features.applist.ui.AppList
+import com.duchastel.simon.simplelauncher.features.applist.ui.AppListState
+import com.slack.circuit.runtime.CircuitContext
 import com.slack.circuit.runtime.presenter.Presenter
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.slack.circuit.runtime.ui.Ui
 import dagger.Binds
 import dagger.Module
@@ -27,7 +32,7 @@ interface AppModule {
         @Provides
         @IntoSet
         fun provideAppListPresenterFactory(appRepository: AppRepository): Presenter.Factory {
-            return Presenter.Factory { screen, navigator ->
+            return Presenter.Factory { screen, navigator, circuitContext ->
                 when (screen) {
                     is AppListScreen -> AppListPresenter(appRepository)
                     else -> null
@@ -41,8 +46,11 @@ interface AppModule {
             return Ui.Factory { screen, _ ->
                 when (screen) {
                     is AppListScreen -> {
-                        Ui { state, modifier ->
-                            AppList(state as AppListState)
+                        object : Ui<AppListState> {
+                            @Composable
+                            override fun Content(state: AppListState, modifier: Modifier) {
+                                AppList(state)
+                            }
                         }
                     }
                     else -> null

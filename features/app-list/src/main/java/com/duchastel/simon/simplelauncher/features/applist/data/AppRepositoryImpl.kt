@@ -3,7 +3,7 @@ package com.duchastel.simon.simplelauncher.features.applist.data
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import com.duchastel.simon.simplelauncher.features.applist.ui.AppInfo
+import com.duchastel.simon.simplelauncher.features.applist.data.AppInfo
 
 class AppRepositoryImpl(private val context: Context) : AppRepository {
 
