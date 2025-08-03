@@ -2,9 +2,9 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.hilt)
+    kotlin("kapt")
 }
 
 android {
@@ -14,6 +14,7 @@ android {
     defaultConfig {
         minSdk = 26
     }
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -25,27 +26,37 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
     implementation(project(":ui"))
     implementation(project(":features:sms"))
 
-    implementation(libs.androidx.core.ktx)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.circuit.foundation)
+    implementation(libs.accompanist.drawablepainter)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
-    implementation("com.slack.circuit:circuit-foundation:0.20.0")
-    implementation("com.slack.circuit:circuit-overlay:0.20.0")
-    implementation("com.slack.circuit:circuit-retained:0.20.0")
-    implementation("com.slack.circuit:circuit-codegen-annotations:0.20.0")
-    kapt("com.slack.circuit:circuit-codegen:0.20.0")
-    implementation("io.coil-kt:coil-compose:2.6.0")
+    testImplementation(libs.junit)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.circuit.test)
+
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.test.junit4)
+}
+
+kapt {
+    correctErrorTypes = true
 }
