@@ -37,6 +37,8 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.uitooling)
+    debugImplementation(libs.androidx.compose.uitooling)
     implementation(libs.circuit.foundation)
     implementation(libs.accompanist.drawablepainter)
     implementation(libs.kotlinx.coroutines.core)
