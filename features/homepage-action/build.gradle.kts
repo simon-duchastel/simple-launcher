@@ -29,6 +29,7 @@ android {
 
 dependencies {
     implementation(project(":ui"))
+    implementation(project(":features:sms"))
 
     implementation(libs.androidx.core.ktx)
     implementation(platform(libs.androidx.compose.bom))

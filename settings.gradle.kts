@@ -23,4 +23,6 @@ rootProject.name = "SimpleLauncher"
 include(":app")
 include(":ui")
 include(":features:app-list")
+include(":features:homepage-action")
+include(":features:sms")
  

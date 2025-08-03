@@ -15,21 +15,15 @@ import com.slack.circuit.runtime.screen.Screen
 import dagger.hilt.components.SingletonComponent
 import kotlinx.parcelize.Parcelize
 
-@Parcelize
-object HomepageActionScreen : Screen {
-    data class State(val eventSink: (Event) -> Unit) : CircuitUiState
-    sealed interface Event : CircuitUiEvent {
-        object Kiss : Event
-    }
-}
-
-@CircuitInject(HomepageActionScreen::class, SingletonComponent::class)
 @Composable
-fun HomepageAction(state: HomepageActionScreen.State, modifier: Modifier) {
+fun HomepageAction(state: HomepageActionState, modifier: Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = "😘",
             fontSize = 100.sp,
-            modifier = Modifier.clickable { state.eventSink(HomepageActionScreen.Event.Kiss) })
+            modifier = Modifier.clickable(
+                onClick = state.onClick
+            ),
+        )
     }
 }
