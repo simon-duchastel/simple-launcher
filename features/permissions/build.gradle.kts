@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.duchastel.simon.simplelauncher.features.sms"
+    namespace = "com.duchastel.simon.simplelauncher.features.permissions"
     compileSdk = 35
 
     defaultConfig {
@@ -27,8 +27,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":features:permissions"))
-
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
