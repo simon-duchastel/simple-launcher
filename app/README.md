@@ -6,11 +6,12 @@ This module is the main entry point of the Simple Launcher application. It is re
 -   Providing the main `Activity`.
 -   Tying together all the feature modules.
 
+## Features
+
+This module includes the following features:
+-   `app-list`: Displays the list of installed applications.
+
 ## Technologies
 
 -   **Hilt**: For dependency injection.
 -   **Jetpack Compose**: For the main UI structure.
-
-## AI Instructions
-
-This file provides context for AI assistants. `GEMINI.md` and `CLAUDE.md` are symlinked to this file.

@@ -1,6 +1,6 @@
 # Simple Launcher
 
-This is a simple Android launcher application built with modern Android development tools.
+This is a simple Android launcher application built with modern Android development tools. It is designed to be a minimal and lightweight launcher, providing users with a clean and focused experience.
 
 ## Project Structure
 
@@ -17,7 +17,3 @@ The project is structured into the following modules:
 -   **Hilt**: For dependency injection.
 -   **Circuit**: For the presentation layer architecture.
 -   **Kotlin Coroutines**: For asynchronous programming.
-
-## AI Instructions
-
-This project contains `GEMINI.md` and `CLAUDE.md` files in each module. These files are intended to provide context to AI assistants. They are symlinked to the `README.md` file in each module.
