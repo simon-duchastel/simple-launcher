@@ -34,7 +34,6 @@ class HomepageActionPresenter @Inject internal constructor(
                         "",
                         "(Ignore) Test message from Simple Launcher",
                     )
-                    println("SMS sent: $smsSent")
                 }
             }
         )
