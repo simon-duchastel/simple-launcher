@@ -53,6 +53,8 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.uitooling)
+    debugImplementation(libs.androidx.compose.uitooling)
     implementation(libs.circuit.foundation)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
