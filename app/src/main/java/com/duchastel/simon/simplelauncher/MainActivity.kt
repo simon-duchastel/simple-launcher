@@ -1,25 +1,26 @@
 package com.duchastel.simon.simplelauncher
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
-import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionScreen
+import com.duchastel.simon.simplelauncher.features.permissions.data.Permission
+import com.duchastel.simon.simplelauncher.features.permissions.data.PermissionsRepository
 import com.duchastel.simon.simplelauncher.ui.theme.SimpleLauncherTheme
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.foundation.CircuitCompositionLocals
 import com.slack.circuit.foundation.CircuitContent
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint

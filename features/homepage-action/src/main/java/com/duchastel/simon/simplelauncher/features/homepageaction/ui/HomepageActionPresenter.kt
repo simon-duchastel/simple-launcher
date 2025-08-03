@@ -30,11 +30,11 @@ class HomepageActionPresenter @Inject internal constructor(
             onClick = {
                 coroutineScope.launch {
                     // TODO - replace this with a real call to the repository
-                    delay(500.milliseconds)
-//                    val smsSent = smsRepository.sendSms(
-//                        "",
-//                        "Test 123",
-//                    )
+                    val smsSent = smsRepository.sendSms(
+                        "",
+                        "(Ignore) Test message from Simple Launcher",
+                    )
+                    println("SMS sent: $smsSent")
                 }
             }
         )
