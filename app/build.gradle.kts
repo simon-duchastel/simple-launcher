@@ -13,11 +13,14 @@ android {
     defaultConfig {
         applicationId = "com.duchastel.simon.simplelauncher"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     buildTypes {
@@ -50,21 +53,24 @@ dependencies {
     implementation(project(":ui"))
 
     implementation(project(":features:app-list"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)
 
-    implementation(libs.circuit.foundation)
-
+    // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
-    testImplementation(libs.junit)
+    // Circuit
+    implementation(libs.circuit.foundation)
+//    implementation(libs.circuit.overlay)
+//    implementation(libs.circuit.runtime.presenter)
+//    implementation(libs.circuit.runtime.ui)
 
+    // Test
+    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.test.junit4)
 }

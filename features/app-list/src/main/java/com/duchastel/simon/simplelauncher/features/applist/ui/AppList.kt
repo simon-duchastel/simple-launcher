@@ -1,6 +1,5 @@
 package com.duchastel.simon.simplelauncher.features.applist.ui
 
-import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -34,7 +33,7 @@ fun AppList(state: AppListState) {
                     .padding(16.dp)
             ) {
                 Image(
-                    painter = remember(app.icon) { DrawableP }(drawable = app.icon),
+                    painter = rememberDrawablePainter(app.icon),
                     contentDescription = null,
                     modifier = Modifier.size(48.dp)
                 )

@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.hilt)
     kotlin("kapt")
 }
@@ -11,22 +12,10 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        minSdk = 21
-        targetSdk = 34
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
+        minSdk = 26
     }
 
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -37,23 +26,34 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "2.2.0"
-    }
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.circuit.foundation)
+    implementation(project(":ui"))
 
-    implementation(libs.accompanist.drawablepainter)
+    // Compose
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.material3)
+//    implementation(libs.androidx.compose.runtime)
+
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
+    implementation(libs.circuit.foundation)
+//    implementation(libs.circuit.runtime.presenter)
+//    implementation(libs.circuit.runtime.ui)
+    implementation(libs.accompanist.drawablepainter)
+
     testImplementation(libs.junit)
+//    testImplementation(libs.circuit.test)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.test.junit4)
+}
+
+kapt {
+    correctErrorTypes = true
 }
