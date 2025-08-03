@@ -47,6 +47,7 @@ android {
 dependencies {
     implementation(project(":ui"))
     implementation(project(":features:app-list"))
+    implementation(project(":features:homepage-action"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -54,6 +55,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.circuit.foundation)
+    implementation(libs.androidx.ui.tooling.preview.android)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 }

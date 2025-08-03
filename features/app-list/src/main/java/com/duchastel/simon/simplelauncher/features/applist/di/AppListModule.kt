@@ -27,10 +27,10 @@ abstract class AppListModule {
     companion object {
         @Provides
         @IntoSet
-        fun provideAppListPresenterFactory(appRepository: AppRepository): Presenter.Factory {
+        fun provideAppListPresenterFactory(appPresenter: AppListPresenter): Presenter.Factory {
             return Presenter.Factory { screen, navigator, circuitContext ->
                 when (screen) {
-                    is AppListScreen -> AppListPresenter(appRepository)
+                    is AppListScreen -> appPresenter
                     else -> null
                 }
             }

@@ -12,6 +12,7 @@ import com.slack.circuit.runtime.screen.Screen
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.parcelize.Parcelize
+import javax.inject.Inject
 
 /**
  * Screen for displaying the list of installed applications.
@@ -19,7 +20,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class AppListScreen : Screen, Parcelable
 
-internal data class AppListState(
+data class AppListState(
     /**
      * The list of launchable apps available to show in the UI.
      */
@@ -29,7 +30,7 @@ internal data class AppListState(
     /**
      * UI model for representing a single app in the list.
      */
-    internal data class App(
+    data class App(
         /**
          * The user-friendly name of the app (e.g., "Gmail").
          */
@@ -47,7 +48,9 @@ internal data class AppListState(
     )
 }
 
-internal class AppListPresenter(private val appRepository: AppRepository) : Presenter<AppListState> {
+class AppListPresenter @Inject internal constructor(
+    private val appRepository: AppRepository,
+) : Presenter<AppListState> {
 
     @Composable
     override fun present(): AppListState {

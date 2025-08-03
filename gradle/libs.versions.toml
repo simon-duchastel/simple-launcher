@@ -15,6 +15,7 @@ compose = "1.6.8"
 mockitoCore = "5.2.0"
 mockitoKotlin = "5.2.1"
 coroutines = "1.8.0"
+uiToolingPreviewAndroid = "1.8.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,6 +56,7 @@ androidx-compose-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-
 circuit-test = { module = "com.slack.circuit:circuit-test", version.ref = "circuit" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
 
 
 [plugins]
