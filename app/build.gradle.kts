@@ -52,19 +52,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
-
-    // Hilt
+    implementation(libs.circuit.foundation)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
-
-    // Circuit
-    implementation(libs.circuit.foundation)
-//    implementation(libs.circuit.overlay)
-//    implementation(libs.circuit.runtime.presenter)
-//    implementation(libs.circuit.runtime.ui)
-
-    // Test
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 }

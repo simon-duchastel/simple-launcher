@@ -29,7 +29,7 @@ internal data class AppListState(
     /**
      * UI model for representing a single app in the list.
      */
-    data class App(
+    internal data class App(
         /**
          * The user-friendly name of the app (e.g., "Gmail").
          */
