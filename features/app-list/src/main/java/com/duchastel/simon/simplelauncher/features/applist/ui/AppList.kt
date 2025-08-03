@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
-fun AppList(state: AppListState) {
+internal fun AppList(state: AppListState) {
     LazyColumn {
         items(state.apps) { app ->
             Row(

@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-internal class AppRepositoryImpl @Inject constructor(
+class AppRepositoryImpl @Inject internal constructor(
     @ApplicationContext private val context: Context,
 ) : AppRepository {
 
