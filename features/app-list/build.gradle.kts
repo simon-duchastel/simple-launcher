@@ -31,22 +31,15 @@ android {
 dependencies {
     implementation(project(":ui"))
 
-    // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3)
-//    implementation(libs.androidx.compose.runtime)
-
+    implementation(libs.circuit.foundation)
+    implementation(libs.accompanist.drawablepainter)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
-    implementation(libs.circuit.foundation)
-//    implementation(libs.circuit.runtime.presenter)
-//    implementation(libs.circuit.runtime.ui)
-    implementation(libs.accompanist.drawablepainter)
-
     testImplementation(libs.junit)
-//    testImplementation(libs.circuit.test)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

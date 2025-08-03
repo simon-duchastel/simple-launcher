@@ -3,26 +3,32 @@ package com.duchastel.simon.simplelauncher.features.applist.data
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import com.duchastel.simon.simplelauncher.features.applist.data.AppInfo
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class AppRepositoryImpl(private val context: Context) : AppRepository {
+internal class AppRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context,
+) : AppRepository {
 
     private val packageManager: PackageManager = context.packageManager
 
-    override fun getInstalledApps(): List<AppInfo> {
-        val intent = Intent(Intent.ACTION_MAIN, null).apply {
+    override fun getInstalledApps(): List<App> {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
-        return packageManager.queryIntentActivities(intent, 0).map {
-            AppInfo(
-                label = it.loadLabel(packageManager).toString(),
-                packageName = it.activityInfo.packageName,
-                icon = it.loadIcon(packageManager)
+
+        val activities = packageManager.queryIntentActivities(intent, 0)
+        return activities.map { resolveInfo ->
+            App(
+                label = resolveInfo.loadLabel(packageManager).toString(),
+                packageName = resolveInfo.activityInfo.packageName,
+                icon = resolveInfo.loadIcon(packageManager)
             )
         }
     }
 
-    override fun launchApp(packageName: String): Intent? {
-        return packageManager.getLaunchIntentForPackage(packageName)
+    override fun launchApp(app: App) {
+        val intent = packageManager.getLaunchIntentForPackage(app.packageName)
+        context.startActivity(intent)
     }
 }
