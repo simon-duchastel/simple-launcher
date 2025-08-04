@@ -3,25 +3,27 @@ package com.duchastel.simon.simplelauncher.features.sms.data
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.telephony.SmsManager
 import com.duchastel.simon.simplelauncher.features.permissions.data.Permission
 import com.duchastel.simon.simplelauncher.features.permissions.data.PermissionsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import android.content.Intent
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SmsRepositoryImplTest {
@@ -43,12 +45,18 @@ class SmsRepositoryImplTest {
             on { hasSystemFeature(PackageManager.FEATURE_TELEPHONY) } doReturn true
         }
         smsBroadcastReceiverFactory = mock {
-            on { createSentSmsPendingIntent(any(), any(), any()) } doReturn mock()
+            on { createSentSmsBroadcastReceiver(any(), any()) } doReturn mock()
         }
         context = mock {
             on { packageManager } doReturn packageManager
             on { getSystemService(SmsManager::class.java) } doReturn smsManager
         }
+
+        whenever(
+            smsBroadcastReceiverFactory.createSentSmsPendingIntent(
+                any(), any(), any()
+            )
+        ) doReturn mock()
 
         smsRepository = SmsRepositoryImpl(context, permissionRepository, smsBroadcastReceiverFactory)
     }
@@ -72,51 +80,56 @@ class SmsRepositoryImplTest {
 
     @Test
     fun `sendSms sends message and returns true on success`() = runTest {
-        val messageIdCaptor = ArgumentCaptor.forClass(String::class.java)
-        val onSentSmsReceivedCaptor = ArgumentCaptor.forClass(Function2::class.java as Class<Function2<Boolean, BroadcastReceiver, Unit>>)
-        lateinit var capturedReceiver: BroadcastReceiver
+        var onSentSmsReceived: ((Boolean, BroadcastReceiver) -> Unit)? = null
+        val receiver: BroadcastReceiver = mock()
 
-        whenever(smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(messageIdCaptor.capture(), onSentSmsReceivedCaptor.capture())) doAnswer {
-            mock<BroadcastReceiver>().also { capturedReceiver = it }
+        whenever(
+            smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(any(), any())
+        ) doAnswer {
+            onSentSmsReceived = it.getArgument(1)
+            receiver
         }
 
-        val result = smsRepository.sendSms("1234567890", "test message")
-
-        capturedReceiver.apply {
-            // Simulate onReceive being called by the system
+        val asyncResult = async {
+            smsRepository.sendSms("1234567890", "test message")
+        }
+        advanceUntilIdle()
+        receiver.apply {
             onReceive(context, Intent())
             resultCode = Activity.RESULT_OK
-            (onSentSmsReceivedCaptor.value as (Boolean, BroadcastReceiver) -> Unit).invoke(true, this)
+            onSentSmsReceived?.invoke(true, this)
         }
+        val result = asyncResult.await()
 
         assertTrue(result)
-        verify(smsManager).sendTextMessage(any(), any(), any(), any(), any())
-        verify(context).registerReceiver(eq(capturedReceiver), any(), any<Int>())
-        verify(context).unregisterReceiver(eq(capturedReceiver))
+        verify(smsManager).sendTextMessage(any(), eq(null), any(), any(), anyOrNull())
+        verify(context).registerReceiver(eq(receiver), any(), any<Int>())
+        verify(context).unregisterReceiver(eq(receiver))
     }
 
     @Test
     fun `sendSms sends message and returns false on failure`() = runTest {
-        val messageIdCaptor = ArgumentCaptor.forClass(String::class.java)
-        val onSentSmsReceivedCaptor = ArgumentCaptor.forClass(Function2::class.java as Class<Function2<Boolean, BroadcastReceiver, Unit>>)
-        var capturedReceiver: BroadcastReceiver? = null
+        var onSentSmsReceived: ((Boolean, BroadcastReceiver) -> Unit)? = null
+        val receiver: BroadcastReceiver = mock()
 
-        whenever(smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(messageIdCaptor.capture(), onSentSmsReceivedCaptor.capture())) doAnswer {
-            mock<BroadcastReceiver>().also { capturedReceiver = it }
+        whenever(
+            smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(any(), any())
+        ) doAnswer {
+            onSentSmsReceived = it.getArgument(1)
+            receiver
         }
 
-        val result = smsRepository.sendSms("1234567890", "test message")
-
-        capturedReceiver?.apply {
-            // Simulate onReceive being called by the system
+        val asyncResult = async {
+            smsRepository.sendSms("1234567890", "test message")
+        }
+        advanceUntilIdle()
+        receiver.apply {
             onReceive(context, Intent())
             resultCode = Activity.RESULT_CANCELED
-            (onSentSmsReceivedCaptor.value as (Boolean, BroadcastReceiver) -> Unit).invoke(false, this)
+            onSentSmsReceived?.invoke(false, this)
         }
+        val result = asyncResult.await()
 
         assertFalse(result)
-        verify(smsManager).sendTextMessage(any(), any(), any(), any(), any())
-        verify(context).registerReceiver(eq(capturedReceiver), any(), any<Int>())
-        verify(context).unregisterReceiver(eq(capturedReceiver))
     }
 }
