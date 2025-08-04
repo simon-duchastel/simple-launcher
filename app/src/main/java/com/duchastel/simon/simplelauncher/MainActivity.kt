@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
+import com.duchastel.simon.simplelauncher.features.homepage.ui.HomepageScreen
 import com.duchastel.simon.simplelauncher.ui.theme.SimpleLauncherTheme
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.foundation.CircuitCompositionLocals
@@ -39,7 +40,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                         ) { page ->
                             when (page) {
-                                0 -> Homepage()
+                                0 -> CircuitContent(HomepageScreen)
                                 1 -> CircuitContent(AppListScreen())
                             }
                         }
