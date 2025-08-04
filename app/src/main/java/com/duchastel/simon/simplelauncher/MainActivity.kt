@@ -13,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
+import com.duchastel.simon.simplelauncher.features.homepage.ui.HomepageScreen
 import com.duchastel.simon.simplelauncher.features.permissions.data.Permission
 import com.duchastel.simon.simplelauncher.features.permissions.data.PermissionsRepository
 import com.duchastel.simon.simplelauncher.ui.theme.SimpleLauncherTheme
@@ -45,7 +46,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                         ) { page ->
                             when (page) {
-                                0 -> Homepage()
+                                0 -> CircuitContent(HomepageScreen)
                                 1 -> CircuitContent(AppListScreen())
                             }
                         }
