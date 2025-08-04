@@ -45,11 +45,11 @@ android {
 }
 
 dependencies {
-    implementation(project(":ui"))
-    implementation(project(":features:app-list"))
-    implementation(project(":features:homepage-action"))
-    implementation(project(":features:permissions"))
-    implementation(project(":features:homepage"))
+    implementation(project(":modules:libs:ui"))
+    implementation(project(":modules:features:app-list"))
+    implementation(project(":modules:features:homepage-action"))
+    implementation(project(":modules:libs:permissions"))
+    implementation(project(":modules:features:homepage"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

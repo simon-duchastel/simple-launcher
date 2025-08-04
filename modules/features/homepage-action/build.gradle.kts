@@ -32,8 +32,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":ui"))
-    implementation(project(":features:sms"))
+    implementation(project(":modules:libs:ui"))
+    implementation(project(":modules:libs:sms"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)
