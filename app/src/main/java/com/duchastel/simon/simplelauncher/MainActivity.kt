@@ -46,8 +46,8 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                         ) { page ->
                             when (page) {
-                                0 -> CircuitContent(HomepageScreen)
-                                1 -> CircuitContent(AppListScreen())
+                                0 -> CircuitContent(HomepageScreen())
+                                1 -> CircuitContent(AppListScreen)
                             }
                         }
                     }

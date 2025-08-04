@@ -19,12 +19,10 @@ import dagger.multibindings.IntoSet
 class HomepageModule {
     @Provides
     @IntoSet
-    fun provideHomepagePresenterFactory(
-        homepagePresenter: HomepagePresenter,
-    ): Presenter.Factory {
+    fun provideHomepagePresenterFactory(): Presenter.Factory {
         return Presenter.Factory { screen, _, _ ->
             when (screen) {
-                is HomepageScreen -> homepagePresenter
+                is HomepageScreen -> HomepagePresenter(screen)
                 else -> null
             }
         }
