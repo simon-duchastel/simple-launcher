@@ -1,6 +1,5 @@
 package com.duchastel.simon.simplelauncher.features.homepage.ui
 
-import android.net.Uri
 import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,37 +9,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionScreen
 import com.slack.circuit.foundation.CircuitContent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.screen.Screen
 import kotlinx.parcelize.Parcelize
+import javax.inject.Inject
 
 @Parcelize
-data class HomepageScreen(
-    val backgroundImageUri: Uri? = null,
-) : Screen, Parcelable
+data object HomepageScreen : Screen, Parcelable
 
 data class HomepageState(
-    val text: String = "Hello, World!",
-    val backgroundImageUri: Uri? = null
+    val text: String,
 ) : CircuitUiState
 
 @Composable
 internal fun Homepage(state: HomepageState) {
     Box(modifier = Modifier.fillMaxSize()) {
-        state.backgroundImageUri?.let { uri ->
-            AsyncImage(
-                model = uri,
-                contentDescription = "Background Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
         CircuitContent(
             HomepageActionScreen,
             modifier = Modifier
@@ -55,17 +42,15 @@ internal fun Homepage(state: HomepageState) {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = "Welcome back...")
+            Text(text = state.text)
         }
     }
 }
 
-class HomepagePresenter internal constructor(
-    private val screen: HomepageScreen,
-) : Presenter<HomepageState> {
+class HomepagePresenter @Inject internal constructor() : Presenter<HomepageState> {
 
     @Composable
     override fun present(): HomepageState {
-        return HomepageState(backgroundImageUri = screen.backgroundImageUri)
+        return HomepageState(text = "Welcome back...")
     }
 }
