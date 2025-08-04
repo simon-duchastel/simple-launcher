@@ -46,11 +46,12 @@ class SmsRepositoryImpl @Inject internal constructor(
             )
 
             val receiver = smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(
-                messageId = messageId
-            ) { successfullySent, broadcastReceiver ->
-                 context.unregisterReceiver(broadcastReceiver)
-                cont.resume(successfullySent)
-            }
+                messageId = messageId,
+                onSentSmsReceived = { successfullySent, broadcastReceiver ->
+                    context.unregisterReceiver(broadcastReceiver)
+                    cont.resume(successfullySent)
+                }
+            )
             val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 Context.RECEIVER_EXPORTED
             } else {
