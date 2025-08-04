@@ -26,4 +26,5 @@ include(":features:app-list")
 include(":features:homepage-action")
 include(":features:sms")
 include(":features:permissions")
+include(":features:homepage")
  
