@@ -39,8 +39,6 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.circuit.foundation)
     implementation(libs.accompanist.drawablepainter)
-    implementation(libs.coil.compose)
-    implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
