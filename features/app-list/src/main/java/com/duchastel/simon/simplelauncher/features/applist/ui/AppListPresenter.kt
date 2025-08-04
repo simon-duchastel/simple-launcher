@@ -18,7 +18,7 @@ import javax.inject.Inject
  * Screen for displaying the list of installed applications.
  */
 @Parcelize
-class AppListScreen : Screen, Parcelable
+data object AppListScreen : Screen, Parcelable
 
 data class AppListState(
     /**

@@ -15,7 +15,6 @@ android {
         minSdk = 26
     }
 
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -33,6 +32,7 @@ android {
 
 dependencies {
     implementation(project(":ui"))
+    implementation(project(":features:homepage-action"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)
@@ -55,6 +55,7 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.test.junit4)
 }
+
 
 kapt {
     correctErrorTypes = true

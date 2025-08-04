@@ -6,9 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
 import com.duchastel.simon.simplelauncher.features.homepage.ui.HomepageScreen
 import com.duchastel.simon.simplelauncher.ui.theme.SimpleLauncherTheme
@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
                 SimpleLauncherTheme {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background
+                        color = Color.Transparent, // transparent to allow wallpaper to display
                     ) {
                         val pagerState = rememberPagerState(pageCount = { 2 })
                         VerticalPager(
@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                         ) { page ->
                             when (page) {
                                 0 -> CircuitContent(HomepageScreen)
-                                1 -> CircuitContent(AppListScreen())
+                                1 -> CircuitContent(AppListScreen)
                             }
                         }
                     }
