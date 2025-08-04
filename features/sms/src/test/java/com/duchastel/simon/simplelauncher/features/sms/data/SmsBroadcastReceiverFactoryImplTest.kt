@@ -3,15 +3,14 @@ package com.duchastel.simon.simplelauncher.features.sms.data
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 
 @ExperimentalCoroutinesApi
 class SmsBroadcastReceiverFactoryImplTest {
@@ -27,56 +26,70 @@ class SmsBroadcastReceiverFactoryImplTest {
     }
 
     @Test
-    fun `create returns a BroadcastReceiver that resumes continuation with true on RESULT_OK`() = runTest {
+    fun `create returns a BroadcastReceiver with true on RESULT_OK`() = runTest {
         val messageId = "testMessageId"
-        val intent = Intent().apply { putExtra("messageId", messageId) }
 
-        val deferred = CompletableDeferred<Boolean>()
+        var result: Boolean? = null
         val receiver = smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(
             messageId = messageId,
-            onSentSmsReceived = { successfullySent, _ -> deferred.complete(successfullySent) },
+            onSentSmsReceived = { successfullySent, _ -> result = successfullySent },
         )
         receiver.resultCode = Activity.RESULT_OK
-        receiver.onReceive(context, intent.apply { putExtra(SmsBroadcastReceiverFactoryImpl.EXTRA_MESSAGE_ID, messageId) })
-        val result = deferred.await()
+        receiver.onReceive(
+            context,
+            Intent().apply { putExtra("messageId", messageId) },
+        )
 
-        assert(result)
+        assert(result == true)
         verify(context).unregisterReceiver(any())
     }
 
     @Test
-    fun `create returns a BroadcastReceiver that resumes continuation with false on non-RESULT_OK`() = runTest {
+    fun `create returns a BroadcastReceiver with false on non-RESULT_OK`() = runTest {
         val messageId = "testMessageId"
-        val intent = Intent().apply { putExtra("messageId", messageId) }
 
-        val deferred = CompletableDeferred<Boolean>()
+        var result: Boolean? = null
         val receiver = smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(
             messageId = messageId,
-            onSentSmsReceived = { successfullySent, _ -> deferred.complete(successfullySent) },
+            onSentSmsReceived = { successfullySent, _ -> result = successfullySent },
         )
         receiver.resultCode = Activity.RESULT_CANCELED
-        receiver.onReceive(context, intent.apply { putExtra(SmsBroadcastReceiverFactoryImpl.EXTRA_MESSAGE_ID, messageId) })
-        val result = deferred.await()
+        receiver.onReceive(
+            context,
+            Intent().apply { putExtra("messageId", messageId) },
+        )
 
-        assert(!result)
-        verify(context).unregisterReceiver(any())
+        assert(result == false)
     }
 
     @Test
     fun `create returns a BroadcastReceiver that ignores intent with different messageId`() = runTest {
         val messageId = "testMessageId"
         val wrongMessageId = "wrongMessageId"
-        val intent = Intent().apply { putExtra("messageId", wrongMessageId) }
 
-        val deferred = CompletableDeferred<Boolean>()
+        var result: Boolean? = null
         val receiver = smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(
             messageId = messageId,
-            onSentSmsReceived = { successfullySent, _ -> deferred.complete(successfullySent) },
+            onSentSmsReceived = { successfullySent, _ -> result = successfullySent },
         )
-        receiver.onReceive(context, intent.apply { putExtra(SmsBroadcastReceiverFactoryImpl.EXTRA_MESSAGE_ID, wrongMessageId) })
-        // The onSentSmsReceived should not be called, so the deferred should not be completed.
-        // We'll just let the test timeout if it does.
-        assert(!deferred.isCompleted)
+        receiver.onReceive(
+            context,
+            Intent().apply { putExtra("messageId", wrongMessageId) },
+        )
+
+        assert(result == null) // assert no result received
         verify(context, never()).unregisterReceiver(any())
+    }
+
+    @Test
+    fun `create returns a BroadcastReceiver that ignores intent without messageId`() = runTest {
+        var result: Boolean? = null
+        val receiver = smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(
+            messageId = "test-message-id",
+            onSentSmsReceived = { successfullySent, _ -> result = successfullySent },
+        )
+        receiver.onReceive(context, Intent())
+
+        assert(result == null) // assert no result received
     }
 }
