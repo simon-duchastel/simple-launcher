@@ -3,14 +3,13 @@ package com.duchastel.simon.simplelauncher.features.sms.data
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import com.duchastel.simon.simplelauncher.features.sms.data.SmsBroadcastReceiverFactoryImpl
-import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -33,13 +32,16 @@ class SmsBroadcastReceiverFactoryImplTest {
         val intent = Intent().apply { putExtra("messageId", messageId) }
 
         val result = suspendCoroutine<Boolean> {
-            val receiver = factory.createSentSmsBroadcastReceiver(messageId, it)
-            receiver.onReceive(mockContext, intent.apply { putExtra("messageId", messageId) })
+            val receiver = smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(
+                messageId = messageId,
+                onSentSmsReceived = { _, _ -> },
+            )
+            receiver.onReceive(context, intent.apply { putExtra("messageId", messageId) })
             receiver.resultCode = Activity.RESULT_OK
         }
 
         assert(result)
-        verify { mockContext.unregisterReceiver(any()) }
+        verify(context).unregisterReceiver(any())
     }
 
     @Test
@@ -48,13 +50,16 @@ class SmsBroadcastReceiverFactoryImplTest {
         val intent = Intent().apply { putExtra("messageId", messageId) }
 
         val result = suspendCoroutine<Boolean> {
-            val receiver = factory.createSentSmsBroadcastReceiver(messageId, it)
-            receiver.onReceive(mockContext, intent.apply { putExtra("messageId", messageId) })
+            val receiver = smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(
+                messageId = messageId,
+                onSentSmsReceived = { _, _ -> },
+            )
+            receiver.onReceive(context, intent.apply { putExtra("messageId", messageId) })
             receiver.resultCode = Activity.RESULT_CANCELED
         }
 
         assert(!result)
-        verify { mockContext.unregisterReceiver(any()) }
+        verify(context).unregisterReceiver(any())
     }
 
     @Test
@@ -64,14 +69,17 @@ class SmsBroadcastReceiverFactoryImplTest {
         val intent = Intent().apply { putExtra("messageId", wrongMessageId) }
 
         val result = suspendCoroutine<Boolean> {
-            val receiver = factory.createSentSmsBroadcastReceiver(messageId, it)
-            receiver.onReceive(mockContext, intent)
+            val receiver = smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(
+                messageId = messageId,
+                onSentSmsReceived = { _, _ -> },
+            )
+            receiver.onReceive(context, intent)
             // The continuation should not be resumed, so we resume it manually after a delay
             // to prevent the test from hanging indefinitely.
             it.resume(false) // Indicate that the receiver did not resume it
         }
 
         assert(!result)
-        verify(exactly = 0) { mockContext.unregisterReceiver(any()) }
+        verify(context).unregisterReceiver(any())
     }
 }

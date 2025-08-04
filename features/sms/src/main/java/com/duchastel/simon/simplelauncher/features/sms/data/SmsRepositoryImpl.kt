@@ -1,8 +1,6 @@
 package com.duchastel.simon.simplelauncher.features.sms.data
 
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
@@ -11,7 +9,6 @@ import com.duchastel.simon.simplelauncher.features.permissions.data.Permission
 import com.duchastel.simon.simplelauncher.features.permissions.data.PermissionsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
-
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.time.Clock
