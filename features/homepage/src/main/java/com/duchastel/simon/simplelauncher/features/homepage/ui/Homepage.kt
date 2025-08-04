@@ -17,11 +17,11 @@ data class HomepageState(
 ) : CircuitUiState
 
 @Composable
-fun Homepage(state: HomepageState) {
+internal fun Homepage(state: HomepageState) {
     Text(text = state.text)
 }
 
-class HomepagePresenter @Inject constructor() : Presenter<HomepageState> {
+class HomepagePresenter @Inject internal constructor() : Presenter<HomepageState> {
     @Composable
     override fun present(): HomepageState {
         return HomepageState()
