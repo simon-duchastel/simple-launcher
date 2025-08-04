@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.features.permissions.data
+package com.duchastel.simon.simplelauncher.libs.permissions.data
 
 /**
  * Manages requesting permissions from the user.

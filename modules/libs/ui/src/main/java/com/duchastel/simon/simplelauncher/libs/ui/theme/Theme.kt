@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.ui.theme
+package com.duchastel.simon.simplelauncher.libs.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

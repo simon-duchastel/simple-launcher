@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.duchastel.simon.simplelauncher.ui"
+    namespace = "com.duchastel.simon.simplelauncher.libs.ui"
     compileSdk = 35
 
     defaultConfig {

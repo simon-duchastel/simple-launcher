@@ -1,9 +1,9 @@
-package com.duchastel.simon.simplelauncher.features.sms.di
+package com.duchastel.simon.simplelauncher.libs.sms.di
 
-import com.duchastel.simon.simplelauncher.features.sms.data.SmsBroadcastReceiverFactory
-import com.duchastel.simon.simplelauncher.features.sms.data.SmsBroadcastReceiverFactoryImpl
-import com.duchastel.simon.simplelauncher.features.sms.data.SmsRepository
-import com.duchastel.simon.simplelauncher.features.sms.data.SmsRepositoryImpl
+import com.duchastel.simon.simplelauncher.libs.sms.data.SmsBroadcastReceiverFactory
+import com.duchastel.simon.simplelauncher.libs.sms.data.SmsBroadcastReceiverFactoryImpl
+import com.duchastel.simon.simplelauncher.libs.sms.data.SmsRepository
+import com.duchastel.simon.simplelauncher.libs.sms.data.SmsRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

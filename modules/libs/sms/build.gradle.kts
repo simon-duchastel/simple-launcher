@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.duchastel.simon.simplelauncher.features.sms"
+    namespace = "com.duchastel.simon.simplelauncher.libs.sms"
     compileSdk = 35
 
     defaultConfig {

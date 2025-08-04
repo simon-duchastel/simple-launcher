@@ -1,7 +1,7 @@
-package com.duchastel.simon.simplelauncher.features.permissions.di
+package com.duchastel.simon.simplelauncher.libs.permissions.di
 
-import com.duchastel.simon.simplelauncher.features.permissions.data.PermissionsRepository
-import com.duchastel.simon.simplelauncher.features.permissions.data.PermissionsRepositoryImpl
+import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
+import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

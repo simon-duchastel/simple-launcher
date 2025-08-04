@@ -2,7 +2,7 @@ package com.duchastel.simon.simplelauncher.features.homepageaction.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import com.duchastel.simon.simplelauncher.features.sms.data.SmsRepository
+import com.duchastel.simon.simplelauncher.libs.sms.data.SmsRepository
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.screen.Screen

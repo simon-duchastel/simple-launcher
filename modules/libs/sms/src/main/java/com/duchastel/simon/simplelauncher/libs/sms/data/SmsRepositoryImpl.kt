@@ -1,12 +1,12 @@
-package com.duchastel.simon.simplelauncher.features.sms.data
+package com.duchastel.simon.simplelauncher.libs.sms.data
 
 import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.telephony.SmsManager
-import com.duchastel.simon.simplelauncher.features.permissions.data.Permission
-import com.duchastel.simon.simplelauncher.features.permissions.data.PermissionsRepository
+import com.duchastel.simon.simplelauncher.libs.permissions.data.Permission
+import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject

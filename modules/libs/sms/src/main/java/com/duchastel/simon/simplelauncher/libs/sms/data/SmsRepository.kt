@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.features.sms.data
+package com.duchastel.simon.simplelauncher.libs.sms.data
 
 /**
  * Repository for sending, receiving, and managing SMS messages.

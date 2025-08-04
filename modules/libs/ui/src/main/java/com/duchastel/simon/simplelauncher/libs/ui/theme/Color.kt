@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.ui.theme
+package com.duchastel.simon.simplelauncher.libs.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

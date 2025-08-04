@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.features.sms.data
+package com.duchastel.simon.simplelauncher.libs.sms.data
 
 import android.app.Activity
 import android.content.BroadcastReceiver
