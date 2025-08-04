@@ -6,8 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.telephony.SmsManager
-import com.duchastel.simon.simplelauncher.features.permissions.data.Permission
-import com.duchastel.simon.simplelauncher.features.permissions.data.PermissionsRepository
+import com.duchastel.simon.simplelauncher.libs.permissions.data.Permission
+import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
+import com.duchastel.simon.simplelauncher.libs.sms.data.SmsBroadcastReceiverFactory
+import com.duchastel.simon.simplelauncher.libs.sms.data.SmsRepositoryImpl
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.advanceUntilIdle

@@ -1,6 +1,6 @@
 package com.duchastel.simon.simplelauncher.features.homepageaction.ui
 
-import com.duchastel.simon.simplelauncher.features.sms.data.SmsRepository
+import com.duchastel.simon.simplelauncher.libs.sms.data.SmsRepository
 import com.slack.circuit.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
