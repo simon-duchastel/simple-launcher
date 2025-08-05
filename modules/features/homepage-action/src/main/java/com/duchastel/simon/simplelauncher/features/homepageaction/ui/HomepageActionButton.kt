@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HomepageAction(state: HomepageActionState, modifier: Modifier) {
+fun HomepageButton(state: HomepageActionState, modifier: Modifier) {
     Text(
         text = "😘",
         fontSize = 100.sp,

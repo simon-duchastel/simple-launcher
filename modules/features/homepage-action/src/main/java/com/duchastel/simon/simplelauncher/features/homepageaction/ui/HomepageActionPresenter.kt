@@ -11,7 +11,7 @@ import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 
 @Parcelize
-object HomepageActionScreen : Screen
+object HomepageActionButton : Screen
 
 data class HomepageActionState(
     val onClick: () -> Unit,
