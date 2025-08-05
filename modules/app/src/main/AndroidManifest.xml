@@ -31,12 +31,7 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="com.duchastel.simon.simplelauncher.settings.SettingsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_settings"
-            android:theme="@style/Theme.SimpleLauncher" />
-    </application>
+        </application>
 
     <queries>
         <intent>
