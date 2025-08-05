@@ -1,10 +1,10 @@
-package com.duchastel.simon.simplelauncher.settings
+package com.duchastel.simon.simplelauncher.features.settings
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
-import com.duchastel.simon.simplelauncher.settings.ui.SettingsScreen
+import com.duchastel.simon.simplelauncher.features.settings.ui.SettingsScreen
 import com.slack.circuit.backstack.rememberSaveableBackStack
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.foundation.CircuitCompositionLocals
