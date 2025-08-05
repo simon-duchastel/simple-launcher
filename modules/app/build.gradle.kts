@@ -50,6 +50,7 @@ dependencies {
     implementation(project(":modules:features:homepage-action"))
     implementation(project(":modules:libs:permissions"))
     implementation(project(":modules:features:homepage"))
+    implementation(project(":modules:features:settings"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

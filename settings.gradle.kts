@@ -27,4 +27,5 @@ include(":modules:features:homepage-action")
 include(":modules:libs:sms")
 include(":modules:libs:permissions")
 include(":modules:features:homepage")
+include(":modules:features:settings")
  
