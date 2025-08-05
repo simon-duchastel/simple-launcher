@@ -16,11 +16,15 @@ mockitoCore = "5.2.0"
 mockitoKotlin = "5.2.1"
 coroutines = "1.8.0"
 uiToolingPreviewAndroid = "1.8.3"
+datastorePreferences = "1.2.0-alpha02"
+lifecycleViewmodelKtx = "2.8.0-alpha02"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 
 # Circuit
 circuit-foundation = { module = "com.slack.circuit:circuit-foundation", version.ref = "circuit" }
