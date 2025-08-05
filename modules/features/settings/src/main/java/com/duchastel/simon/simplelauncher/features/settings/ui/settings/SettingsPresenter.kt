@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.features.settings.ui
+package com.duchastel.simon.simplelauncher.features.settings.ui.settings
 
 import androidx.compose.runtime.Composable
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository

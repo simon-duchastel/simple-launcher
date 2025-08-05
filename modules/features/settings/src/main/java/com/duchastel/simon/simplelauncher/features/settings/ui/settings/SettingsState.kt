@@ -1,8 +1,7 @@
-package com.duchastel.simon.simplelauncher.features.settings.ui
+package com.duchastel.simon.simplelauncher.features.settings.ui.settings
 
 import com.slack.circuit.runtime.CircuitUiState
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.parcelize.Parcelize
 
 data class SettingsState(
     val settingsRows: ImmutableList<SettingsRow>,

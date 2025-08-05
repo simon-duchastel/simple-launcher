@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.features.settings.ui
+package com.duchastel.simon.simplelauncher.features.settings.ui.settings
 
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
 import com.slack.circuit.test.FakeNavigator
@@ -6,7 +6,7 @@ import com.slack.circuit.test.test
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
+import org.junit.Assert
 import org.junit.Test
 import org.mockito.kotlin.mock
 
@@ -26,7 +26,7 @@ class SettingsPresenterTest {
             val expected = listOf(
                 SettingsState.SettingsRow.HOMEPAGE_ACTION,
             ).toImmutableList()
-            assertEquals(expected, state.settingsRows)
+            Assert.assertEquals(expected, state.settingsRows)
         }
     }
 }
