@@ -29,7 +29,10 @@ data class HomepageState(
 internal fun Homepage(state: HomepageState) {
     Box(modifier = Modifier.fillMaxSize()) {
         CircuitContent(
-            HomepageActionButton,
+            HomepageActionButton(
+                smsDestination = "",
+                emoji = "😘",
+            ),
             modifier = Modifier
                 .padding(
                     horizontal = 60.dp,

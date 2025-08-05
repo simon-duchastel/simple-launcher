@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
 import com.duchastel.simon.simplelauncher.features.homepage.ui.HomepageScreen
+import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import com.duchastel.simon.simplelauncher.libs.ui.theme.SimpleLauncherTheme
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.foundation.CircuitCompositionLocals
@@ -24,8 +25,13 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var circuit: Circuit
 
+    @Inject
+    lateinit var permissionsRepository: PermissionsRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        permissionsRepository.activityOnCreate()
 
         setContent {
             CircuitCompositionLocals(circuit) {

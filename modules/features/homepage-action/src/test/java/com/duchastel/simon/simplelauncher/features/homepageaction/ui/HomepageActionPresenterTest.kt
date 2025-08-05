@@ -2,6 +2,7 @@ package com.duchastel.simon.simplelauncher.features.homepageaction.ui
 
 import com.duchastel.simon.simplelauncher.libs.sms.data.SmsRepository
 import com.slack.circuit.test.test
+import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -14,7 +15,22 @@ import org.mockito.kotlin.any
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomepageActionPresenterTest {
     private val smsRepository: SmsRepository = mock()
-    private val presenter = HomepageActionPresenter(smsRepository)
+    private val testDestination = "+1234567890"
+    private val testEmoji = "🥳"
+    private val config = HomepageActionButton(
+        smsDestination = testDestination,
+        emoji = testEmoji
+    )
+    private val presenter = HomepageActionPresenter(config, smsRepository)
+
+    @Test
+    fun `state provides configured emoji`() = runTest {
+        presenter.test {
+            val state = awaitItem()
+
+            assertEquals("🥳", state.emoji)
+        }
+    }
 
     @Test
     fun `onClick calls sendSms on repository`() = runTest {
@@ -23,7 +39,7 @@ class HomepageActionPresenterTest {
         presenter.test {
             val state = awaitItem()
             state.onClick.invoke()
-            verify(smsRepository).sendSms(eq(""), eq("(Ignore) Test message from Simple Launcher"))
+            verify(smsRepository).sendSms(eq(testDestination), eq(testEmoji))
         }
     }
 }

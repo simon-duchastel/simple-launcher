@@ -1,5 +1,8 @@
 package com.duchastel.simon.simplelauncher.libs.permissions.data
 
+import android.app.Activity
+import androidx.activity.result.contract.ActivityResultContract
+
 /**
  * Manages requesting permissions from the user.
  */
@@ -13,4 +16,11 @@ interface PermissionsRepository {
      * @return true if the permission was granted, false otherwise
      */
     suspend fun requestPermission(permission: Permission): Boolean
+
+    /**
+     * Callback triggered by an [Activity] in its onCreate method. Intended to be called ONLY by an
+     * [Activity] and this MUST be called in its onCreate method since the repository must register
+     * its [ActivityResultContract] in onCreate (ie. before RESUME).
+     */
+    fun activityOnCreate()
 }
