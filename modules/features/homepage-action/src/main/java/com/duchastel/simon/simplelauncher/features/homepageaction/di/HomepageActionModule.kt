@@ -2,9 +2,9 @@ package com.duchastel.simon.simplelauncher.features.homepageaction.di
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageAction
+import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageButton
 import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionPresenter
-import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionScreen
+import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionButton
 import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionState
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.ui.Ui
@@ -24,7 +24,7 @@ object HomepageActionModule {
     ): Presenter.Factory {
         return Presenter.Factory { screen, navigator, circuitContext ->
             when (screen) {
-                is HomepageActionScreen -> homepageActionPresenter
+                is HomepageActionButton -> homepageActionPresenter
                 else -> null
             }
         }
@@ -35,11 +35,11 @@ object HomepageActionModule {
     fun provideAppListUiFactory(): Ui.Factory {
         return Ui.Factory { screen, _ ->
             when (screen) {
-                is HomepageActionScreen -> {
+                is HomepageActionButton -> {
                     object : Ui<HomepageActionState> {
                         @Composable
                         override fun Content(state: HomepageActionState, modifier: Modifier) {
-                            HomepageAction(state, modifier)
+                            HomepageButton(state, modifier)
                         }
                     }
                 }

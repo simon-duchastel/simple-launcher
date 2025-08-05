@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
-import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionScreen
+import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionButton
 import com.slack.circuit.foundation.CircuitContent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.presenter.Presenter
@@ -29,7 +29,7 @@ data class HomepageState(
 internal fun Homepage(state: HomepageState) {
     Box(modifier = Modifier.fillMaxSize()) {
         CircuitContent(
-            HomepageActionScreen,
+            HomepageActionButton,
             modifier = Modifier
                 .padding(
                     horizontal = 60.dp,
