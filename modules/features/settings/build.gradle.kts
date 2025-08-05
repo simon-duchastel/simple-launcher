@@ -38,9 +38,9 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.circuit.foundation)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.circuit.foundation)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
