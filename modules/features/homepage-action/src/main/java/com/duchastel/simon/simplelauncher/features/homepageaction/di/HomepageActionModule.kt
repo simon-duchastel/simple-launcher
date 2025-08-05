@@ -20,11 +20,11 @@ object HomepageActionModule {
     @Provides
     @IntoSet
     fun provideAppListPresenterFactory(
-        homepageActionPresenter: HomepageActionPresenter,
+        homepageActionPresenterFactory: HomepageActionPresenter.Factory,
     ): Presenter.Factory {
         return Presenter.Factory { screen, navigator, circuitContext ->
             when (screen) {
-                is HomepageActionButton -> homepageActionPresenter
+                is HomepageActionButton -> homepageActionPresenterFactory.create(screen)
                 else -> null
             }
         }

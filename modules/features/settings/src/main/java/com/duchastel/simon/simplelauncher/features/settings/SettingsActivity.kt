@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
+
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
+import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import com.slack.circuit.backstack.rememberSaveableBackStack
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.foundation.CircuitCompositionLocals
@@ -19,8 +21,13 @@ class SettingsActivity : ComponentActivity() {
     @Inject
     lateinit var circuit: Circuit
 
+    @Inject
+    lateinit var permissionsRepository: PermissionsRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        permissionsRepository.activityOnCreate()
 
         setContent {
             MaterialTheme {

@@ -32,6 +32,7 @@ android {
 
 dependencies {
     implementation(project(":modules:libs:ui"))
+    implementation(project(":modules:libs:permissions"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)
