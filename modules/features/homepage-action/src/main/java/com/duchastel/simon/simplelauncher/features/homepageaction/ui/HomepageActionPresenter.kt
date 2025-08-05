@@ -27,10 +27,10 @@ class HomepageActionPresenter @Inject internal constructor(
         return HomepageActionState(
             onClick = {
                 coroutineScope.launch {
-                    val smsSent = smsRepository.sendSms(
-                        "",
-                        "(Ignore) Test message from Simple Launcher",
-                    )
+//                    val smsSent = smsRepository.sendSms(
+//                        "",
+//                        "(Ignore) Test message from Simple Launcher",
+//                    )
                 }
             }
         )
