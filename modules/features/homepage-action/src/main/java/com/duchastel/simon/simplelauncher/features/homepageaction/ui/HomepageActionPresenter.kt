@@ -30,7 +30,7 @@ class HomepageActionPresenter @Inject internal constructor(
                     val smsSent = smsRepository.sendSms(
                         "",
                         "(Ignore) Test message from Simple Launcher",
-//                    )
+                    )
                 }
             }
         )
