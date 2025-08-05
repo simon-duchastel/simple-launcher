@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionButton
+import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
+import com.duchastel.simon.simplelauncher.libs.ui.components.SettingsButton
 import com.slack.circuit.foundation.CircuitContent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.presenter.Presenter
@@ -23,11 +25,18 @@ data object HomepageScreen : Screen, Parcelable
 
 data class HomepageState(
     val text: String,
+    val onSettingsClick: () -> Unit,
 ) : CircuitUiState
 
 @Composable
 internal fun Homepage(state: HomepageState) {
     Box(modifier = Modifier.fillMaxSize()) {
+        SettingsButton(
+            onClick = state.onSettingsClick,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(32.dp)
+        )
         CircuitContent(
             HomepageActionButton(
                 smsDestination = "",
@@ -50,10 +59,17 @@ internal fun Homepage(state: HomepageState) {
     }
 }
 
-class HomepagePresenter @Inject internal constructor() : Presenter<HomepageState> {
+class HomepagePresenter @Inject internal constructor(
+    private val settingsRepository: SettingsRepository,
+) : Presenter<HomepageState> {
 
     @Composable
     override fun present(): HomepageState {
-        return HomepageState(text = "Welcome back...")
+        return HomepageState(
+            text = "Welcome back...",
+            onSettingsClick = {
+                // launch the SettingsActivity from the SettingsModule here
+            }
+        )
     }
 }
