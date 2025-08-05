@@ -3,6 +3,7 @@ package com.duchastel.simon.simplelauncher.libs.permissions.data
 import android.app.Activity
 import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +21,10 @@ class PermissionsRepositoryImpl @Inject internal constructor(
     /**
      * [activity] is required to be a [ComponentActivity]. Throw if it isn't.
      */
-    private val requestPermissionLauncher =
-        (activity as ComponentActivity).registerForActivityResult(
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<Array<String>>
+
+    override fun activityOnCreate() {
+        requestPermissionLauncher = (activity as ComponentActivity).registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { isGranted: Map<String, Boolean> ->
             permissionsFlow.update { currentPermissions ->
@@ -35,6 +38,7 @@ class PermissionsRepositoryImpl @Inject internal constructor(
                 }
             }
         }
+    }
 
     override suspend fun requestPermission(permission: Permission): Boolean {
         val permissionStatus = ContextCompat.checkSelfPermission(

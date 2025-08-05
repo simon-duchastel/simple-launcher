@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun HomepageButton(state: HomepageActionState, modifier: Modifier) {
     Text(
-        text = "😘",
+        text = state.emoji,
         fontSize = 100.sp,
         modifier = modifier.clickable(
             onClick = state.onClick
