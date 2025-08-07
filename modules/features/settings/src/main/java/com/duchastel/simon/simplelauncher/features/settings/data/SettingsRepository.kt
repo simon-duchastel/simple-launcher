@@ -14,7 +14,8 @@ interface SettingsRepository {
     suspend fun saveSetting(settingData: SettingData): Boolean
 
     /**
-     * Gets the data for the current, or null if the setting isn't stored.
+     * Gets the data for the current, or null if there was an error. SettingData can also be null
+     * if we could read the settings successfully but no settings data for that setting was stored.
      */
-    fun getSettingsFlow(setting: Setting): Flow<SettingData?>
+    fun getSettingsFlow(setting: Setting): Flow<SettingData?>?
 }
