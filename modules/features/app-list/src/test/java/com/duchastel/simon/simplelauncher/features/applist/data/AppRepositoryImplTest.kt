@@ -6,12 +6,11 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
-import org.junit.After
+import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
-import org.mockito.Mockito
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.eq
@@ -22,23 +21,24 @@ import org.mockito.kotlin.verify
 class AppRepositoryImplTest {
     private lateinit var context: Context
     private lateinit var packageManager: PackageManager
+    private lateinit var intentLauncher: IntentLauncher
     private lateinit var appRepository: AppRepositoryImpl
 
     @Before
     fun setUp() {
         context = mock()
         packageManager = mock()
+        intentLauncher = mock()
         whenever(context.packageManager).doReturn(packageManager)
 
-        appRepository = AppRepositoryImpl(context)
+        appRepository = AppRepositoryImpl(context, intentLauncher)
     }
 
-    @Ignore("TODO - fix the mocking issue in this test")
     @Test
     fun `getInstalledApps returns mapped apps`() {
-        val activityInfo = mock<ActivityInfo>()
         val icon = mock<Drawable>()
-        whenever(activityInfo.packageName).thenReturn("com.example.test")
+        val activityInfo = ActivityInfo()
+        activityInfo.packageName = "com.example.test"
 
         val resolveInfo = object : ResolveInfo() {
             override fun loadLabel(pm: PackageManager): CharSequence {
@@ -67,6 +67,6 @@ class AppRepositoryImplTest {
 
         appRepository.launchApp(app)
 
-        verify(context).startActivity(intent)
+        verify(intentLauncher).startActivity(intent)
     }
 }
