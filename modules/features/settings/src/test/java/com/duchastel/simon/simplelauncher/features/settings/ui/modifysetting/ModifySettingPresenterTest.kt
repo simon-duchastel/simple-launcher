@@ -2,16 +2,12 @@ package com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting
 
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
-import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsPresenter
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
-import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsState
 import com.slack.circuit.test.FakeNavigator
 import com.slack.circuit.test.test
 import junit.framework.TestCase.assertEquals
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock

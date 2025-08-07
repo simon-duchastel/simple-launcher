@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.circuit.foundation)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
