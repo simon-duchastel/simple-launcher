@@ -20,7 +20,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 /**
  * A modifier that provides a bounce effect when clicked. Inherently includes [clickable].
  */
-fun Modifier.bounceClickable(onClick: () -> Unit) = composed {
+fun Modifier.bounceClickable(
+    onDoubleClick: (() -> Unit)? = null,
+    onClick: () -> Unit,
+) = composed {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.9f else 1f,
@@ -30,16 +33,18 @@ fun Modifier.bounceClickable(onClick: () -> Unit) = composed {
 
     this
         .scale(scale)
-        .pointerInput(Unit) {
+        .pointerInput(onDoubleClick, onClick) {
             detectTapGestures(
                 onPress = {
                     isPressed = true
-                    val success = tryAwaitRelease()
-                    isPressed = false
-                    if (success) {
-                        onClick()
+                    try {
+                        awaitRelease()
+                    } finally {
+                        isPressed = false
                     }
-                }
+                },
+                onTap = { onClick() },
+                onDoubleTap = { onDoubleClick?.invoke() }
             )
         }
 }

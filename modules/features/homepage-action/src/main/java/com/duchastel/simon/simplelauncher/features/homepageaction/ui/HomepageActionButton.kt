@@ -11,6 +11,6 @@ fun HomepageButton(state: HomepageActionState, modifier: Modifier) {
     Text(
         text = state.emoji,
         fontSize = 100.sp,
-        modifier = modifier.bounceClickable { state.onClick() }
+        modifier = modifier.bounceClickable(onDoubleClick = state.onDoubleClick) { state.onClick() }
     )
 }

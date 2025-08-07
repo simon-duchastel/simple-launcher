@@ -1,7 +1,10 @@
 package com.duchastel.simon.simplelauncher.features.homepageaction.ui
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import com.duchastel.simon.simplelauncher.libs.sms.data.SmsRepository
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.presenter.Presenter
@@ -23,11 +26,13 @@ typealias PhoneNumber = String
 data class HomepageActionState(
     val emoji: String,
     val onClick: () -> Unit,
+    val onDoubleClick: (() -> Unit)?,
 ) : CircuitUiState
 
 class HomepageActionPresenter @AssistedInject internal constructor(
     @Assisted private val config: HomepageActionButton,
     private val smsRepository: SmsRepository,
+    private val intentLauncher: IntentLauncher,
 ) : Presenter<HomepageActionState> {
 
     @Composable
@@ -42,6 +47,10 @@ class HomepageActionPresenter @AssistedInject internal constructor(
                         config.emoji.toString(),
                     )
                 }
+            },
+            onDoubleClick = {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:${config.smsDestination}"))
+                intentLauncher.startActivity(intent)
             }
         )
     }
