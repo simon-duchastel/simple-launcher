@@ -11,9 +11,10 @@ interface AppRepository {
     fun getInstalledApps(): List<App>
 
     /**
-     * Launches the provided [App] on the device.
+     * Launches the provided [App] on the device. Returns false when there was an
+     * error launching the app, true otherwise.
      *
      * @param app The app to be launched.
      */
-    fun launchApp(app: App)
+    fun launchApp(app: App): Boolean
 }

@@ -1,6 +1,7 @@
 package com.duchastel.simon.simplelauncher.features.applist.ui
 
-import android.app.Activity
+
+import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Parcelable
@@ -9,9 +10,11 @@ import androidx.compose.runtime.remember
 import com.duchastel.simon.simplelauncher.features.applist.data.App
 import com.duchastel.simon.simplelauncher.features.applist.data.AppRepository
 import com.duchastel.simon.simplelauncher.features.settings.SettingsActivity
+import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.screen.Screen
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.parcelize.Parcelize
@@ -53,8 +56,9 @@ data class AppListState(
 }
 
 class AppListPresenter @Inject internal constructor(
-    private val activity: Activity,
+    @ApplicationContext private val context: Context,
     private val appRepository: AppRepository,
+    private val intentLauncher: IntentLauncher,
 ) : Presenter<AppListState> {
 
     @Composable
@@ -69,8 +73,8 @@ class AppListPresenter @Inject internal constructor(
         return AppListState(
             apps = apps,
             onSettingsClicked = {
-                val intent = Intent(activity, SettingsActivity::class.java)
-                activity.startActivity(intent)
+                val intent = SettingsActivity.newActivityIntent(context)
+                intentLauncher.startActivityAsSeparateApp(intent)
             }
         )
     }

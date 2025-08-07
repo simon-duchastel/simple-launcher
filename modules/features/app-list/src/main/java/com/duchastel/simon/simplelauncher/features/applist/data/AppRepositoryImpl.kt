@@ -3,11 +3,13 @@ package com.duchastel.simon.simplelauncher.features.applist.data
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class AppRepositoryImpl @Inject internal constructor(
     @ApplicationContext private val context: Context,
+    private val intentLauncher: IntentLauncher,
 ) : AppRepository {
 
     private val packageManager: PackageManager = context.packageManager
@@ -27,8 +29,10 @@ class AppRepositoryImpl @Inject internal constructor(
         }
     }
 
-    override fun launchApp(app: App) {
-        val intent = packageManager.getLaunchIntentForPackage(app.packageName)
-        context.startActivity(intent)
+    override fun launchApp(app: App): Boolean {
+        val intent = packageManager.getLaunchIntentForPackage(app.packageName) ?: return false
+
+        intentLauncher.startActivity(intent)
+        return true
     }
 }
