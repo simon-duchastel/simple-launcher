@@ -4,8 +4,11 @@
     <application>
         <activity
             android:name=".SettingsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_settings" />
+            android:taskAffinity="com.duchastel.simon.simplelauncher.features.settings"
+            android:launchMode="singleTask"
+            android:label="@string/title_activity_settings"
+            android:exported="true"
+            android:excludeFromRecents="false" />
     </application>
 
 </manifest>

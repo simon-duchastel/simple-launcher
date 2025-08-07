@@ -45,7 +45,7 @@ abstract class AppListModule {
                         object : Ui<AppListState> {
                             @Composable
                             override fun Content(state: AppListState, modifier: Modifier) {
-                                AppList(state)
+                                AppList(state, modifier)
                             }
                         }
                     }

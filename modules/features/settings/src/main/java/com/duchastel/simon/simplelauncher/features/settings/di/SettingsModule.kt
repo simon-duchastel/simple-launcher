@@ -5,13 +5,14 @@ import com.duchastel.simon.simplelauncher.features.settings.data.SettingsReposit
 import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingPresenter
 import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingScreen
 import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingState
-import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingsScreen
+
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsPresenter
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsState
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.ui.Ui
 import com.slack.circuit.runtime.ui.ui
+import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingContent
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -36,7 +37,7 @@ abstract class SettingsModule {
                     SettingsScreen(state, modifier)
                 }
                 is ModifySettingScreen -> ui<ModifySettingState>  { state, modifier ->
-                    ModifySettingsScreen(state, modifier)
+                    ModifySettingContent(state, modifier)
                 }
                 else -> null
             }
