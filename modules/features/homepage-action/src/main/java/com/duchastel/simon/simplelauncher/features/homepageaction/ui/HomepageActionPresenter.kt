@@ -15,6 +15,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import androidx.core.net.toUri
+import java.time.Duration
 
 @Parcelize
 data class HomepageActionButton(
@@ -26,6 +27,7 @@ typealias PhoneNumber = String
 
 data class HomepageActionState(
     val emoji: String,
+    val onLongClick: (Duration) -> Unit,
     val onClick: () -> Unit,
     val onDoubleClick: () -> Unit,
 ) : CircuitUiState
@@ -43,9 +45,18 @@ class HomepageActionPresenter @AssistedInject internal constructor(
             emoji = config.emoji,
             onClick = {
                 coroutineScope.launch {
-                    val smsSent = smsRepository.sendSms(
+                    smsRepository.sendSms(
                         config.smsDestination,
-                        config.emoji.toString(),
+                        config.emoji,
+                    )
+                }
+            },
+            onLongClick = { duration ->
+                coroutineScope.launch {
+                    val count = (duration.toMillis() / 500).toInt()
+                    smsRepository.sendSms(
+                        config.smsDestination,
+                        config.emoji.repeat(count.coerceAtLeast(1)),
                     )
                 }
             },

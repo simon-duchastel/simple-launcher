@@ -14,6 +14,7 @@ fun HomepageButton(state: HomepageActionState, modifier: Modifier) {
         modifier = modifier.bounceClickable(
             onClick = state.onClick,
             onDoubleClick = state.onDoubleClick,
+            onLongClick = state.onLongClick,
         )
     )
 }

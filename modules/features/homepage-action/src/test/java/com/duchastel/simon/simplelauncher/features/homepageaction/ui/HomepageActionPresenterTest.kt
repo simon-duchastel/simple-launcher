@@ -15,6 +15,9 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.any
+import java.time.Duration
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomepageActionPresenterTest {
@@ -58,6 +61,17 @@ class HomepageActionPresenterTest {
             verify(intentLauncher).startActivity(argThat { intent ->
                 intent.action == expectedIntent.action && intent.data == expectedIntent.data
             })
+        }
+    }
+
+    @Test
+    fun `onLongClick calls sendSms on repository with repeated emoji`() = runTest {
+        whenever(smsRepository.sendSms(any(), any())).thenReturn(true)
+
+        presenter.test {
+            val state = awaitItem()
+            state.onLongClick.invoke(Duration.ofMillis(1500))
+            verify(smsRepository).sendSms(eq(testDestination), eq(testEmoji.repeat(3)))
         }
     }
 }
