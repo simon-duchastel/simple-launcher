@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting
+package com.duchastel.simon.simplelauncher.features.settings.data
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
