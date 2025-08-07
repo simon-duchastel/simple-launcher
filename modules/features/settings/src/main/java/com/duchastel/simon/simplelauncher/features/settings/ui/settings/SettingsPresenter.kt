@@ -1,7 +1,7 @@
 package com.duchastel.simon.simplelauncher.features.settings.ui.settings
 
 import androidx.compose.runtime.Composable
-import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
+import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingScreen
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dagger.assisted.Assisted
@@ -11,7 +11,6 @@ import kotlinx.collections.immutable.toImmutableList
 
 class SettingsPresenter @AssistedInject internal constructor(
     @Assisted private val navigator: Navigator,
-    private val repository: SettingsRepository,
 ) : Presenter<SettingsState> {
 
     @Composable
@@ -19,7 +18,7 @@ class SettingsPresenter @AssistedInject internal constructor(
         return SettingsState(
             settingsRows = SettingsState.SettingsRow.entries.toImmutableList(),
             onSettingsRowClick = { settingsRow ->
-                // TODO - add navigation to settings row screen
+                navigator.goTo(ModifySettingScreen(settingsRow.toSettingDomainType()))
             }
         )
     }
