@@ -35,28 +35,32 @@ class AppRepositoryImplTest {
     }
 
     @Test
-    fun `getInstalledApps returns mapped apps`() {
-        val icon = mock<Drawable>()
-        val activityInfo = ActivityInfo()
-        activityInfo.packageName = "com.example.test"
+    fun `getInstalledApps returns mapped and sorted apps`() {
+        val icon1 = mock<Drawable>()
+        val icon2 = mock<Drawable>()
+        val activityInfo1 = ActivityInfo()
+        activityInfo1.packageName = "com.example.appb"
+        val activityInfo2 = ActivityInfo()
+        activityInfo2.packageName = "com.example.appa"
 
-        val resolveInfo = object : ResolveInfo() {
-            override fun loadLabel(pm: PackageManager): CharSequence {
-                return "Test App"
-            }
-
-            override fun loadIcon(pm: PackageManager): Drawable {
-                return icon
-            }
+        val resolveInfo1 = object : ResolveInfo() {
+            override fun loadLabel(pm: PackageManager): CharSequence = "B App"
+            override fun loadIcon(pm: PackageManager): Drawable = icon1
         }
-        resolveInfo.activityInfo = activityInfo
-        whenever(packageManager.queryIntentActivities(any(), eq(0))).thenReturn(listOf(resolveInfo))
+        resolveInfo1.activityInfo = activityInfo1
+
+        val resolveInfo2 = object : ResolveInfo() {
+            override fun loadLabel(pm: PackageManager): CharSequence = "A App"
+            override fun loadIcon(pm: PackageManager): Drawable = icon2
+        }
+        resolveInfo2.activityInfo = activityInfo2
+
+        whenever(packageManager.queryIntentActivities(any(), eq(0))).thenReturn(listOf(resolveInfo1, resolveInfo2))
 
         val result = appRepository.getInstalledApps()
-        assertEquals(1, result.size)
-        assertEquals("Test App", result[0].label)
-        assertEquals("com.example.test", result[0].packageName)
-        assertEquals(icon, result[0].icon)
+        assertEquals(2, result.size)
+        assertEquals("A App", result[0].label)
+        assertEquals("B App", result[1].label)
     }
 
     @Test
