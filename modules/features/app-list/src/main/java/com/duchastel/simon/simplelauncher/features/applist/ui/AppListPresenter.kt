@@ -1,14 +1,20 @@
 package com.duchastel.simon.simplelauncher.features.applist.ui
 
+
+import android.content.Context
+import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.duchastel.simon.simplelauncher.features.applist.data.App
 import com.duchastel.simon.simplelauncher.features.applist.data.AppRepository
+import com.duchastel.simon.simplelauncher.features.settings.SettingsActivity
+import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.screen.Screen
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.parcelize.Parcelize
@@ -25,6 +31,7 @@ data class AppListState(
      * The list of launchable apps available to show in the UI.
      */
     val apps: ImmutableList<App>,
+    val onSettingsClicked: () -> Unit,
 ) : CircuitUiState {
 
     /**
@@ -49,7 +56,9 @@ data class AppListState(
 }
 
 class AppListPresenter @Inject internal constructor(
+    @ApplicationContext private val context: Context,
     private val appRepository: AppRepository,
+    private val intentLauncher: IntentLauncher,
 ) : Presenter<AppListState> {
 
     @Composable
@@ -61,7 +70,13 @@ class AppListPresenter @Inject internal constructor(
                 }.toImmutableList()
         }
 
-        return AppListState(apps = apps)
+        return AppListState(
+            apps = apps,
+            onSettingsClicked = {
+                val intent = SettingsActivity.newActivityIntent(context)
+                intentLauncher.startActivityAsSeparateApp(intent)
+            }
+        )
     }
 }
 

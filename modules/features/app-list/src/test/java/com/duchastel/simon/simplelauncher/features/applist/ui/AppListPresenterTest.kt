@@ -1,21 +1,25 @@
 package com.duchastel.simon.simplelauncher.features.applist.ui
 
+import android.content.Context
 import com.duchastel.simon.simplelauncher.features.applist.data.App
 import com.duchastel.simon.simplelauncher.features.applist.data.AppRepository
+import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import com.slack.circuit.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppListPresenterTest {
+    private val context: Context = mock()
     private val appRepository: AppRepository = mock()
-    private val presenter = AppListPresenter(appRepository)
+    private val intentLauncher: IntentLauncher = mock()
+    private val presenter = AppListPresenter(context, appRepository, intentLauncher)
 
     @Test
     fun `state contains apps from repository`() = runTest {
@@ -43,6 +47,14 @@ class AppListPresenterTest {
             val state = awaitItem()
             state.apps[0].launchApp()
             verify(appRepository).launchApp(fakeApp)
+        }
+    }
+
+    fun `onSettingsClicked starts settings activity as new app`() = runTest {
+        presenter.test {
+            val state = awaitItem()
+            state.onSettingsClicked()
+            verify(intentLauncher).startActivityAsSeparateApp(any())
         }
     }
 }
