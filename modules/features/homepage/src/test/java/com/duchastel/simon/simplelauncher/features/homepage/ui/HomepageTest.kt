@@ -37,7 +37,7 @@ class HomepagePresenterTest {
         whenever(settingsRepository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(homepageActionSetting))
 
         presenter.test {
-            val state = awaitItem()
+            val state = expectMostRecentItem()
 
             Assert.assertEquals("Welcome back...", state.text)
             Assert.assertEquals("👋", state.homepageAction?.emoji)
@@ -55,7 +55,7 @@ class HomepagePresenterTest {
         whenever(settingsRepository.getSettingsFlow(Setting.HomepageAction)).thenReturn(settingsFlow)
 
         presenter.test {
-            val initialState = awaitItem()
+            val initialState = expectMostRecentItem()
             Assert.assertEquals("👋", initialState.homepageAction?.emoji)
             Assert.assertEquals("1234567890", initialState.homepageAction?.smsDestination)
 
