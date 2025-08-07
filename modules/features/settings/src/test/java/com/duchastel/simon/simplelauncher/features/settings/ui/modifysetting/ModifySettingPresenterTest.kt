@@ -1,5 +1,6 @@
 package com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting
 
+import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
 import com.slack.circuit.test.FakeNavigator

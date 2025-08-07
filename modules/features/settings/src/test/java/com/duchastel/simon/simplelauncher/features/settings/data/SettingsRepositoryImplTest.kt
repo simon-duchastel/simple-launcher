@@ -1,7 +1,9 @@
 package com.duchastel.simon.simplelauncher.features.settings.data
 
+import android.content.Context
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.mock
 
 class SettingsRepositoryImplTest {
 
@@ -9,7 +11,7 @@ class SettingsRepositoryImplTest {
 
     @Before
     fun setUp() {
-        settingsRepository = SettingsRepositoryImpl()
+        settingsRepository = SettingsRepositoryImpl(mock(Context::class.java))
     }
 
     @Test
