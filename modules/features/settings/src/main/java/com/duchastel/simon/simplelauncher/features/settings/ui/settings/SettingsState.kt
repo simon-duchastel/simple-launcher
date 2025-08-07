@@ -1,6 +1,6 @@
 package com.duchastel.simon.simplelauncher.features.settings.ui.settings
 
-import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.Setting
+import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.slack.circuit.runtime.CircuitUiState
 import kotlinx.collections.immutable.ImmutableList
 
