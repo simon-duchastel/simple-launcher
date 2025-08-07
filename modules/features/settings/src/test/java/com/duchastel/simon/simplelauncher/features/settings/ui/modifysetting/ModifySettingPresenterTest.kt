@@ -39,7 +39,7 @@ class ModifySettingPresenterTest {
         presenter.test {
             val state = awaitItem()
 
-            assertEquals(Setting.HomepageAction, state.setting)
+            assert(state is ModifySettingState.HomepageActionState)
         }
     }
 }
