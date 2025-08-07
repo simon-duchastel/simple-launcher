@@ -24,8 +24,8 @@ class AppListPresenterTest {
     @Test
     fun `state contains apps from repository`() = runTest {
         val fakeApps = listOf(
-            App(label = "App1", packageName = "com.example.app1", icon = mock()),
-            App(label = "App2", packageName = "com.example.app2", icon = mock())
+            App(label = "A App", packageName = "com.example.appa", icon = mock()),
+            App(label = "B App", packageName = "com.example.appb", icon = mock())
         )
         whenever(appRepository.getInstalledApps()).thenReturn(fakeApps)
 
@@ -33,8 +33,8 @@ class AppListPresenterTest {
             val state = awaitItem()
 
             assertEquals(2, state.apps.size)
-            assertEquals("App1", state.apps[0].label)
-            assertEquals("App2", state.apps[1].label)
+            assertEquals("A App", state.apps[0].label)
+            assertEquals("B App", state.apps[1].label)
         }
     }
 

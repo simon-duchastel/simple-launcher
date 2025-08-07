@@ -26,7 +26,7 @@ class AppRepositoryImpl @Inject internal constructor(
                 packageName = resolveInfo.activityInfo.packageName,
                 icon = resolveInfo.loadIcon(packageManager)
             )
-        }
+        }.sortedBy { it.label }
     }
 
     override fun launchApp(app: App): Boolean {
