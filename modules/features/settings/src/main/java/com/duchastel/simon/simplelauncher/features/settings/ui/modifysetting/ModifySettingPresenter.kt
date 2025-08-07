@@ -46,7 +46,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                         saveButtonState = ButtonState.Enabled
                         (it as? SettingData.HomepageActionSettingData)?.let {
                             emoji = it.emoji
-                            isEmojiError = (emoji.length > 1 || emoji.firstOrNull()?.isEmoji() == false)
+                            isEmojiError = !it.emoji.isEmoji()
                             phoneNumber = it.phoneNumber
                             isPhoneNumberError = !phoneNumber.isValidPhoneNumber()
                         }
@@ -72,8 +72,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                     onEmojiChanged = { updatedEmoji ->
                         // don't process the change if we're loading
                         if (saveButtonState !is ButtonState.Loading) {
-                            val hasError = (updatedEmoji.length > 1 || updatedEmoji.firstOrNull()
-                                ?.isEmoji() == false)
+                            val hasError = (updatedEmoji.isNotEmpty() && !updatedEmoji.isEmoji())
                             if (!hasError) {
                                 // only update the emoji if it's valid
                                 emoji = updatedEmoji
@@ -83,12 +82,10 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                     },
                     onPhoneNumberChanged = { updatedPhoneNumber ->
                         // don't process the change if we're loading
-                        val isValid = updatedPhoneNumber.isValidPhoneNumber()
-                        if (isValid){
-                            // only update the phone number if it's valid
+                        if (saveButtonState !is ButtonState.Loading) {
                             phoneNumber = updatedPhoneNumber
+                            isPhoneNumberError = phoneNumber.isNotEmpty() && !updatedPhoneNumber.isValidPhoneNumber()
                         }
-                        isPhoneNumberError = !isValid
                     },
                     saveButtonState = saveButtonState,
                     onSaveButtonClicked = {
@@ -109,9 +106,10 @@ class ModifySettingPresenter @AssistedInject internal constructor(
         }
     }
 
-    private fun Char.isEmoji(): Boolean {
-        return Character.getType(this) == Character.SURROGATE.toInt() ||
-                Character.getType(this) == Character.OTHER_SYMBOL.toInt()
+    private fun String.isEmoji(): Boolean {
+        val asChar = firstOrNull() ?: return false
+        return Character.getType(asChar) == Character.SURROGATE.toInt() ||
+                Character.getType(asChar) == Character.OTHER_SYMBOL.toInt()
     }
 
     private fun String.isValidPhoneNumber(): Boolean {

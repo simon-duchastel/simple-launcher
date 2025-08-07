@@ -42,7 +42,8 @@ private fun HomepageActionContent(state: HomepageActionState, modifier: Modifier
             isError = state.isPhoneNumberError,
         )
         TextButton(
-            onClick = { state.onSaveButtonClicked() }
+            onClick = { state.onSaveButtonClicked() },
+            enabled = state.saveButtonState is ButtonState.Enabled
         ) {
             if (state.saveButtonState is ButtonState.Loading) {
                 CircularProgressIndicator()
