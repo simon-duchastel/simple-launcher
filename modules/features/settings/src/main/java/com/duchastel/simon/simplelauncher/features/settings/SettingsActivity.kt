@@ -10,7 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.duchastel.simon.simplelauncher.features.settings.ui.SettingsScreen
+import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import com.duchastel.simon.simplelauncher.libs.ui.theme.SimpleLauncherTheme
 import com.slack.circuit.backstack.rememberSaveableBackStack
