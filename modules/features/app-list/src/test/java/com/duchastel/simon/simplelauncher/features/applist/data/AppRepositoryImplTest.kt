@@ -34,12 +34,11 @@ class AppRepositoryImplTest {
         appRepository = AppRepositoryImpl(context, intentLauncher)
     }
 
-    @Ignore("TODO - fix the mocking issue in this test")
     @Test
     fun `getInstalledApps returns mapped apps`() {
-        val activityInfo = mock<ActivityInfo>()
         val icon = mock<Drawable>()
-        whenever(activityInfo.packageName).thenReturn("com.example.test")
+        val activityInfo = ActivityInfo()
+        activityInfo.packageName = "com.example.test"
 
         val resolveInfo = object : ResolveInfo() {
             override fun loadLabel(pm: PackageManager): CharSequence {
