@@ -52,7 +52,7 @@ class HomepageActionPresenterTest {
     fun `onDoubleClick launches intent`() = runTest {
         presenter.test {
             val state = awaitItem()
-            state.onDoubleClick?.invoke()
+            state.onDoubleClick()
 
             val expectedIntent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:$testDestination"))
             verify(intentLauncher).startActivity(argThat { intent ->

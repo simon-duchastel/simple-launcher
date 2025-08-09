@@ -14,6 +14,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import androidx.core.net.toUri
 
 @Parcelize
 data class HomepageActionButton(
@@ -26,7 +27,7 @@ typealias PhoneNumber = String
 data class HomepageActionState(
     val emoji: String,
     val onClick: () -> Unit,
-    val onDoubleClick: (() -> Unit)?,
+    val onDoubleClick: () -> Unit,
 ) : CircuitUiState
 
 class HomepageActionPresenter @AssistedInject internal constructor(
@@ -49,7 +50,7 @@ class HomepageActionPresenter @AssistedInject internal constructor(
                 }
             },
             onDoubleClick = {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:${config.smsDestination}"))
+                val intent = Intent(Intent.ACTION_VIEW, "sms:${config.smsDestination}".toUri())
                 intentLauncher.startActivity(intent)
             }
         )

@@ -21,8 +21,8 @@ import androidx.compose.ui.input.pointer.pointerInput
  * A modifier that provides a bounce effect when clicked. Inherently includes [clickable].
  */
 fun Modifier.bounceClickable(
-    onDoubleClick: (() -> Unit)? = null,
     onClick: () -> Unit,
+    onDoubleClick: (() -> Unit)? = null,
 ) = composed {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
@@ -37,10 +37,10 @@ fun Modifier.bounceClickable(
             detectTapGestures(
                 onPress = {
                     isPressed = true
-                    try {
-                        awaitRelease()
-                    } finally {
-                        isPressed = false
+                    val success = tryAwaitRelease()
+                    isPressed = false
+                    if (success) {
+                        onClick()
                     }
                 },
                 onTap = { onClick() },
