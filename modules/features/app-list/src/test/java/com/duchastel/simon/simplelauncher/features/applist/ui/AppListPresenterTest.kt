@@ -50,6 +50,18 @@ class AppListPresenterTest {
         }
     }
 
+    @Test
+    fun `onLaunchSystemSettings calls repository`() = runTest {
+        val fakeApp = App(label = "App1", packageName = "com.example.app1", icon = mock())
+        whenever(appRepository.getInstalledApps()).thenReturn(listOf(fakeApp))
+
+        presenter.test {
+            val state = awaitItem()
+            state.apps[0].launchSystemSettings()
+            verify(appRepository).launchAppSystemSettings(fakeApp)
+        }
+    }
+
     fun `onSettingsClicked starts settings activity as new app`() = runTest {
         presenter.test {
             val state = awaitItem()

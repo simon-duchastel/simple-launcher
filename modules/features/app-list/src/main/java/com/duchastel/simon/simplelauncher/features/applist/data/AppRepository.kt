@@ -17,4 +17,11 @@ interface AppRepository {
      * @param app The app to be launched.
      */
     fun launchApp(app: App): Boolean
+
+    /**
+     * Launches the provided [App]'s system settings page.
+     *
+     * @param app The app to launch the settings for.
+     */
+    fun launchAppSystemSettings(app: App)
 }
