@@ -14,7 +14,10 @@ import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.eq
+import android.net.Uri
+import android.provider.Settings
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.verify
 
@@ -72,5 +75,18 @@ class AppRepositoryImplTest {
         appRepository.launchApp(app)
 
         verify(intentLauncher).startActivity(intent)
+    }
+
+    @Test
+    fun `launchAppSystemSettings starts correct intent`() {
+        val app = App(label = "App1", packageName = "com.example.app1", icon = mock())
+        val captor = argumentCaptor<Intent>()
+
+        appRepository.launchAppSystemSettings(app)
+
+        verify(intentLauncher).startActivity(captor.capture())
+        val intent = captor.firstValue
+        assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, intent.action)
+        assertEquals(Uri.fromParts("package", "com.example.app1", null), intent.data)
     }
 }

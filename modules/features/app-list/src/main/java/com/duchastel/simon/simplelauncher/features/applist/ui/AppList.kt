@@ -1,11 +1,11 @@
 package com.duchastel.simon.simplelauncher.features.applist.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.duchastel.simon.simplelauncher.libs.ui.components.SettingsButton
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun AppList(state: AppListState, modifier: Modifier) {
     LazyColumn(modifier = modifier) {
@@ -36,7 +37,10 @@ internal fun AppList(state: AppListState, modifier: Modifier) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { app.launchApp() }
+                    .combinedClickable(
+                        onClick = { app.launchApp() },
+                        onLongClick = { app.launchSystemSettings() }
+                    )
                     .padding(16.dp)
             ) {
                 Image(

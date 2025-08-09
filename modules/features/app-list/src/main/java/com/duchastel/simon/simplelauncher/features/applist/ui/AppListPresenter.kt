@@ -52,6 +52,11 @@ data class AppListState(
          * Lambda to launch the app when triggered from the UI.
          */
         val launchApp: () -> Unit,
+
+        /**
+         * Lambda to launch the app's system settings when triggered from the UI.
+         */
+        val launchSystemSettings: () -> Unit,
     )
 }
 
@@ -66,7 +71,10 @@ class AppListPresenter @Inject internal constructor(
         val apps = remember(appRepository) {
             appRepository.getInstalledApps()
                 .map { app ->
-                    app.toUiApp(launchApp = { appRepository.launchApp(app) })
+                    app.toUiApp(
+                        launchApp = { appRepository.launchApp(app) },
+                        launchSystemSettings = { appRepository.launchAppSystemSettings(app) }
+                    )
                 }.toImmutableList()
         }
 
@@ -85,10 +93,12 @@ class AppListPresenter @Inject internal constructor(
  */
 private fun App.toUiApp(
     launchApp: () -> Unit,
+    launchSystemSettings: () -> Unit,
 ): AppListState.App {
     return AppListState.App(
         label = label,
         icon = icon,
         launchApp = launchApp,
+        launchSystemSettings = launchSystemSettings,
     )
 }
