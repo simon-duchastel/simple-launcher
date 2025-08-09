@@ -45,8 +45,20 @@ class AppListPresenterTest {
 
         presenter.test {
             val state = awaitItem()
-            state.apps[0].launchApp()
+            state.apps[0].onClicked()
             verify(appRepository).launchApp(fakeApp)
+        }
+    }
+
+    @Test
+    fun `onLaunchSystemSettings calls repository`() = runTest {
+        val fakeApp = App(label = "App1", packageName = "com.example.app1", icon = mock())
+        whenever(appRepository.getInstalledApps()).thenReturn(listOf(fakeApp))
+
+        presenter.test {
+            val state = awaitItem()
+            state.apps[0].onLongClicked()
+            verify(appRepository).launchAppSystemSettings(fakeApp)
         }
     }
 

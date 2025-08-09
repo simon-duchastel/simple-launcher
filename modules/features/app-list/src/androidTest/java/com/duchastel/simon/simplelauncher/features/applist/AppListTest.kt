@@ -4,7 +4,6 @@ import android.R
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppList
@@ -34,12 +33,12 @@ class AppListTest {
                         App(
                             label = "Settings",
                             icon = ContextCompat.getDrawable(context, R.drawable.star_on)!!,
-                            launchApp = { },
+                            onClicked = { },
                         ),
                         App(
                             label = "Phone",
                             icon = ContextCompat.getDrawable(context, R.drawable.star_on)!!,
-                            launchApp = { },
+                            onClicked = { },
                         )
                     ).toImmutableList()
                 )

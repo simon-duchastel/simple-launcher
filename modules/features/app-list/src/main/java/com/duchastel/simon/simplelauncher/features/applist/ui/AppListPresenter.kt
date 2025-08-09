@@ -2,7 +2,6 @@ package com.duchastel.simon.simplelauncher.features.applist.ui
 
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Parcelable
 import androidx.compose.runtime.Composable
@@ -49,9 +48,14 @@ data class AppListState(
         val icon: Drawable,
 
         /**
-         * Lambda to launch the app when triggered from the UI.
+         * Lambda when the app is clicked in the UI.
          */
-        val launchApp: () -> Unit,
+        val onClicked: () -> Unit,
+
+        /**
+         * Lambda when the app is long-clicked in the UI (press and hold).
+         */
+        val onLongClicked: () -> Unit,
     )
 }
 
@@ -66,7 +70,10 @@ class AppListPresenter @Inject internal constructor(
         val apps = remember(appRepository) {
             appRepository.getInstalledApps()
                 .map { app ->
-                    app.toUiApp(launchApp = { appRepository.launchApp(app) })
+                    app.toUiApp(
+                        onClicked = { appRepository.launchApp(app) },
+                        onLongClicked = { appRepository.launchAppSystemSettings(app) }
+                    )
                 }.toImmutableList()
         }
 
@@ -84,11 +91,13 @@ class AppListPresenter @Inject internal constructor(
  * Maps an [App] domain model to a UI [AppListState.App].
  */
 private fun App.toUiApp(
-    launchApp: () -> Unit,
+    onClicked: () -> Unit,
+    onLongClicked: () -> Unit,
 ): AppListState.App {
     return AppListState.App(
         label = label,
         icon = icon,
-        launchApp = launchApp,
+        onClicked = onClicked,
+        onLongClicked = onLongClicked,
     )
 }
