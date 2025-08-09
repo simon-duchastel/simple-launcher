@@ -38,8 +38,8 @@ internal fun AppList(state: AppListState, modifier: Modifier) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .combinedClickable(
-                        onClick = { app.launchApp() },
-                        onLongClick = { app.launchSystemSettings() }
+                        onClick = { app.onClicked() },
+                        onLongClick = { app.onLongClicked() }
                     )
                     .padding(16.dp)
             ) {

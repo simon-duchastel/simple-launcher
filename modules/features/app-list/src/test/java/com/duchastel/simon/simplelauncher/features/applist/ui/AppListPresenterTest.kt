@@ -45,7 +45,7 @@ class AppListPresenterTest {
 
         presenter.test {
             val state = awaitItem()
-            state.apps[0].launchApp()
+            state.apps[0].onClicked()
             verify(appRepository).launchApp(fakeApp)
         }
     }
@@ -57,7 +57,7 @@ class AppListPresenterTest {
 
         presenter.test {
             val state = awaitItem()
-            state.apps[0].launchSystemSettings()
+            state.apps[0].onLongClicked()
             verify(appRepository).launchAppSystemSettings(fakeApp)
         }
     }
