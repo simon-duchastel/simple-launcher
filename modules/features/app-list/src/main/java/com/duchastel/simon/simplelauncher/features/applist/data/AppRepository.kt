@@ -23,5 +23,5 @@ interface AppRepository {
      *
      * @param app The app to launch the settings for.
      */
-    fun launchAppSystemSettings(app: App)
+    fun launchAppSystemSettings(app: App): Boolean
 }

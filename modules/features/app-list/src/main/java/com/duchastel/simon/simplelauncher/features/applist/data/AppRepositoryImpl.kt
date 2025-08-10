@@ -38,10 +38,11 @@ class AppRepositoryImpl @Inject internal constructor(
         return true
     }
 
-    override fun launchAppSystemSettings(app: App) {
+    override fun launchAppSystemSettings(app: App): Boolean {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             data = Uri.fromParts("package", app.packageName, null)
         }
         intentLauncher.startActivity(intent)
+        return true
     }
 }
