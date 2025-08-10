@@ -59,11 +59,13 @@ class PermissionsRepositoryImpl @Inject internal constructor(
     private fun Permission.asManifestPermission(): String =
         when (this) {
             Permission.SEND_SMS -> android.Manifest.permission.SEND_SMS
+            Permission.READ_CONTACTS -> android.Manifest.permission.READ_CONTACTS
         }
 
     private fun String.asPermission(): Permission? =
         when (this) {
             android.Manifest.permission.SEND_SMS -> Permission.SEND_SMS
+            android.Manifest.permission.READ_CONTACTS -> Permission.READ_CONTACTS
             else -> null
         }
 }
