@@ -14,7 +14,11 @@ import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.eq
+import android.net.Uri
+import android.provider.Settings
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.verify
 
@@ -72,5 +76,21 @@ class AppRepositoryImplTest {
         appRepository.launchApp(app)
 
         verify(intentLauncher).startActivity(intent)
+    }
+
+    @Ignore("TODO - Intent is null in test so always passes, re-enable once fixed")
+    @Test
+    fun `launchAppSystemSettings starts correct intent`() {
+        val app = App(label = "App1", packageName = "com.example.app1", icon = mock())
+
+        appRepository.launchAppSystemSettings(app)
+
+        val expectedIntent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", "com.example.app1", null),
+        )
+        verify(intentLauncher).startActivity(argThat { intent ->
+            intent.action == expectedIntent.action && intent.data == expectedIntent.data
+        })
     }
 }

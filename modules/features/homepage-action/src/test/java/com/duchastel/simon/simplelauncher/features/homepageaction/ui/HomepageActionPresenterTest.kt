@@ -8,6 +8,7 @@ import com.slack.circuit.test.test
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import org.junit.Ignore
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
@@ -48,6 +49,7 @@ class HomepageActionPresenterTest {
         }
     }
 
+    @Ignore("TODO - Intent is null in test so always passes, re-enable once fixed")
     @Test
     fun `onDoubleClick launches intent`() = runTest {
         presenter.test {
