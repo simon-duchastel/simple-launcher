@@ -4,9 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
@@ -28,6 +31,7 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var permissionsRepository: PermissionsRepository
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -40,15 +44,19 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = Color.Transparent, // transparent to allow wallpaper to display
                     ) {
-                        val pagerState = rememberPagerState(pageCount = { 2 })
-                        VerticalPager(
-                            state = pagerState,
-                            modifier = Modifier
-                        ) { page ->
-                            when (page) {
-                                0 -> CircuitContent(HomepageScreen)
-                                1 -> CircuitContent(AppListScreen)
+                        val scaffoldState = rememberBottomSheetScaffoldState(
+                            bottomSheetState = rememberStandardBottomSheetState(
+                                initialValue = SheetValue.PartiallyExpanded,
+                                skipHiddenState = false
+                            )
+                        )
+                        BottomSheetScaffold(
+                            scaffoldState = scaffoldState,
+                            sheetContent = {
+                                CircuitContent(AppListScreen)
                             }
+                        ) {
+                            CircuitContent(HomepageScreen)
                         }
                     }
                 }
