@@ -8,15 +8,21 @@ import com.duchastel.simon.simplelauncher.libs.ui.extensions.LongClickScope
 import com.slack.circuit.test.test
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doSuspendableAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomepageActionPresenterTest {
@@ -26,7 +32,7 @@ class HomepageActionPresenterTest {
     private val testEmoji = "🥳"
     private val config = HomepageActionButton(
         smsDestination = testDestination,
-        emoji = testEmoji
+        emoji = testEmoji,
     )
     private val presenter = HomepageActionPresenter(config, smsRepository, intentLauncher)
 
@@ -66,15 +72,20 @@ class HomepageActionPresenterTest {
     @Test
     fun `onLongClick calls sendSms on repository with repeated emoji`() = runTest {
         val scope = mock<LongClickScope> {
-            onBlocking { tryAwaitRelease() }.thenReturn(true)
+            onBlocking { tryAwaitRelease() } doAnswer {
+                runBlocking {
+                    delay(1500) // 3 emojis expected, since we delay 3x 500ms = 1500ms
+                    true
+                }
+            }
         }
         whenever(smsRepository.sendSms(any(), any())).thenReturn(true)
 
         presenter.test {
             val state = awaitItem()
+
             state.onLongClick(scope)
-            // We can't easily test the emoji count, so we'll just check that it's called
-            verify(smsRepository).sendSms(eq(testDestination), any())
+            verify(smsRepository).sendSms(eq(testDestination), eq("🥳🥳🥳"))
         }
     }
 

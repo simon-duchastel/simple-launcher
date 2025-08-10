@@ -47,7 +47,6 @@ class HomepageActionPresenter @AssistedInject internal constructor(
             emoji = config.emoji,
             onClick = {
                 coroutineScope.launch {
-                    println("TODO - short click")
                     smsRepository.sendSms(
                         config.smsDestination,
                         config.emoji,
@@ -60,7 +59,6 @@ class HomepageActionPresenter @AssistedInject internal constructor(
                     val success = scope.tryAwaitRelease()
                     val endTime = Clock.System.now()
 
-                    println("TODO - long  click $success")
                     if (success) {
                         val duration = endTime - startTime
                         val count = (duration.inWholeMilliseconds / 500).toInt().coerceAtLeast(1)
@@ -72,7 +70,6 @@ class HomepageActionPresenter @AssistedInject internal constructor(
                 }
             },
             onDoubleClick = {
-                println("TODO - 2x    click")
                 val intent = Intent(Intent.ACTION_VIEW, "sms:${config.smsDestination}".toUri())
                 intentLauncher.startActivity(intent)
             }
