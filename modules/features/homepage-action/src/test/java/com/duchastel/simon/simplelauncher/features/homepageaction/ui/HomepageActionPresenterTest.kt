@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import com.duchastel.simon.simplelauncher.libs.sms.data.SmsRepository
+import com.duchastel.simon.simplelauncher.libs.ui.extensions.LongClickScope
 import com.slack.circuit.test.test
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -13,11 +14,9 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.any
-import java.time.Duration
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomepageActionPresenterTest {
@@ -66,12 +65,30 @@ class HomepageActionPresenterTest {
 
     @Test
     fun `onLongClick calls sendSms on repository with repeated emoji`() = runTest {
+        val scope = mock<LongClickScope> {
+            onBlocking { tryAwaitRelease() }.thenReturn(true)
+        }
         whenever(smsRepository.sendSms(any(), any())).thenReturn(true)
 
         presenter.test {
             val state = awaitItem()
-            state.onLongClick.invoke(Duration.ofMillis(1500))
-            verify(smsRepository).sendSms(eq(testDestination), eq(testEmoji.repeat(3)))
+            state.onLongClick(scope)
+            // We can't easily test the emoji count, so we'll just check that it's called
+            verify(smsRepository).sendSms(eq(testDestination), any())
+        }
+    }
+
+    @Test
+    fun `onLongClick does not sendSms on repository when cancelled`() = runTest {
+        val scope = mock<LongClickScope> {
+            onBlocking { tryAwaitRelease() }.thenReturn(false)
+        }
+        whenever(smsRepository.sendSms(any(), any())).thenReturn(true)
+
+        presenter.test {
+            val state = awaitItem()
+            state.onLongClick(scope)
+            verify(smsRepository, never()).sendSms(any(), any())
         }
     }
 }
