@@ -2,9 +2,7 @@ package com.duchastel.simon.simplelauncher.libs.ui.extensions
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.forEachGesture
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -13,16 +11,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
-import java.time.Duration
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.ExperimentalTime
 
 /**
  * A modifier that provides a bounce effect when clicked. Inherently includes [clickable].
  */
+@OptIn(ExperimentalTime::class)
 fun Modifier.bounceClickable(
-    onLongClick: ((Duration) -> Unit)? = null,
-    longPressTimeout: Long = 500L,
     onClick: () -> Unit,
     onDoubleClick: (() -> Unit)? = null,
+    onLongClick: ((LongClickScope) -> Unit)? = null,
 ) = composed {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
@@ -31,33 +34,35 @@ fun Modifier.bounceClickable(
         label = "bounce_animation"
     )
 
-    Modifier
+    this
         .scale(scale)
         .pointerInput(onDoubleClick, onClick) {
-            forEachGesture {
-                awaitPointerEventScope {
-                    awaitFirstDown(requireUnconsumed = false)
+            detectTapGestures(
+                onPress = {
                     isPressed = true
-                    val downTime = System.currentTimeMillis()
-
-                    val up = waitForUpOrCancellation()
-
-                    isPressed = false
-                    val upTime = System.currentTimeMillis()
-
-                    if (up != null) {
-                        val duration = upTime - downTime
-                        if (duration >= longPressTimeout) {
-                            onLongClick?.invoke(Duration.ofMillis(duration))
-                        } else {
-                            onClick()
+                    coroutineScope {
+                        val successAsync = async { tryAwaitRelease() }
+                        val longPressJob = launch {
+                            delay(500.milliseconds)
+                            onLongClick?.invoke(
+                                object : LongClickScope {
+                                    override suspend fun tryAwaitRelease(): Boolean {
+                                        return successAsync.await()
+                                    }
+                                }
+                            )
                         }
+                        successAsync.await()
+                        longPressJob.cancel()
+                        isPressed = false
                     }
-                }
-            },
-            onTap = { onClick() },
-            onDoubleTap = { onDoubleClick?.invoke() }
+                },
+                onTap = { onClick() },
+                onDoubleTap = { onDoubleClick?.invoke() }
             )
-            }
         }
+}
+
+interface LongClickScope {
+    suspend fun tryAwaitRelease(): Boolean
 }

@@ -1,7 +1,6 @@
 package com.duchastel.simon.simplelauncher.features.homepageaction.ui
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import com.duchastel.simon.simplelauncher.intents.IntentLauncher
@@ -15,7 +14,9 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import androidx.core.net.toUri
-import java.time.Duration
+import com.duchastel.simon.simplelauncher.libs.ui.extensions.LongClickScope
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @Parcelize
 data class HomepageActionButton(
@@ -27,7 +28,7 @@ typealias PhoneNumber = String
 
 data class HomepageActionState(
     val emoji: String,
-    val onLongClick: (Duration) -> Unit,
+    val onLongClick: (LongClickScope) -> Unit,
     val onClick: () -> Unit,
     val onDoubleClick: () -> Unit,
 ) : CircuitUiState
@@ -38,6 +39,7 @@ class HomepageActionPresenter @AssistedInject internal constructor(
     private val intentLauncher: IntentLauncher,
 ) : Presenter<HomepageActionState> {
 
+    @OptIn(ExperimentalTime::class)
     @Composable
     override fun present(): HomepageActionState {
         val coroutineScope = rememberCoroutineScope()
@@ -51,13 +53,20 @@ class HomepageActionPresenter @AssistedInject internal constructor(
                     )
                 }
             },
-            onLongClick = { duration ->
+            onLongClick = { scope ->
                 coroutineScope.launch {
-                    val count = (duration.toMillis() / 500).toInt()
-                    smsRepository.sendSms(
-                        config.smsDestination,
-                        config.emoji.repeat(count.coerceAtLeast(1)),
-                    )
+                    val startTime = Clock.System.now()
+                    val success = scope.tryAwaitRelease()
+                    val endTime = Clock.System.now()
+
+                    if (success) {
+                        val duration = endTime - startTime
+                        val count = (duration.inWholeMilliseconds / 500).toInt().coerceAtLeast(1)
+                        smsRepository.sendSms(
+                            config.smsDestination,
+                            config.emoji.repeat(count),
+                        )
+                    }
                 }
             },
             onDoubleClick = {
