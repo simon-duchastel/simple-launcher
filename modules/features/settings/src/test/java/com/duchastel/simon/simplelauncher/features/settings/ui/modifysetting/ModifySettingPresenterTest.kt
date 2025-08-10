@@ -4,6 +4,7 @@ import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
+import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import com.slack.circuit.test.FakeNavigator
 import com.slack.circuit.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,6 +23,7 @@ import org.mockito.kotlin.whenever
 class ModifySettingPresenterTest {
 
     private val repository: SettingsRepository = mock()
+    private val permissionsRepository: PermissionsRepository = mock()
     private val navigator: FakeNavigator = FakeNavigator(SettingsScreen)
 
     private lateinit var presenter: ModifySettingPresenter
@@ -36,6 +38,7 @@ class ModifySettingPresenterTest {
             ModifySettingScreen(setting),
             navigator,
             repository,
+            permissionsRepository,
         )
     }
 
