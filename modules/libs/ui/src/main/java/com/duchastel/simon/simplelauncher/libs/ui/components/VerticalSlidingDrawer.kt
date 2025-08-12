@@ -1,4 +1,4 @@
-package com.duchastel.simon.simplelauncher.ui.components
+package com.duchastel.simon.simplelauncher.libs.ui.components
 
 import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
