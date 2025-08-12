@@ -1,6 +1,5 @@
 package com.duchastel.simon.simplelauncher.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -13,9 +12,9 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.rememberOverscrollEffect
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -25,6 +24,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 enum class DragAnchors {
@@ -62,7 +62,7 @@ fun VerticalSlidingDrawer(
                 ): Offset {
                     val additionalConsumedY = state.dispatchRawDelta(available.y)
                     val remainingAvailableY =  available.y - additionalConsumedY
-                    return Offset(available.x, remainingAvailableY)
+                    return Offset(x = available.x, y = remainingAvailableY)
                 }
 
                 override suspend fun onPostFling(
@@ -96,7 +96,6 @@ fun VerticalSlidingDrawer(
                     .anchoredDraggable(
                         state = state,
                         orientation = Orientation.Vertical,
-                        overscrollEffect = rememberOverscrollEffect(),
                         flingBehavior = flingBehavior,
                         reverseDirection = false,
                         interactionSource = interactionSource,
@@ -104,10 +103,11 @@ fun VerticalSlidingDrawer(
             ) {
                 content()
             }
-            Box(
+            Surface(
                 modifier = Modifier
-                    .background(color = MaterialTheme.colorScheme.background)
-                    .offset { IntOffset(0, state.offset.roundToInt()) }
+                    .fillMaxSize()
+                    .offset { IntOffset(0, state.offset.roundToInt()) },
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
             ) {
                 drawerContent()
             }
