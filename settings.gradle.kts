@@ -20,10 +20,13 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "SimpleLauncher"
-include(":app")
-include(":ui")
-include(":features:app-list")
-include(":features:homepage-action")
-include(":features:sms")
-include(":features:permissions")
+include(":modules:app")
+include(":modules:libs:ui")
+include(":modules:features:app-list")
+include(":modules:features:homepage-action")
+include(":modules:features:homepage")
+include(":modules:features:settings")
+include(":modules:libs:sms")
+include(":modules:libs:permissions")
+include(":modules:libs:intents")
  
