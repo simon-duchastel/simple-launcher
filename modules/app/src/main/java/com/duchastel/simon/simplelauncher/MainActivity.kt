@@ -4,14 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
 import com.duchastel.simon.simplelauncher.features.homepage.ui.HomepageScreen
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
+import com.duchastel.simon.simplelauncher.libs.ui.components.VerticalSlidingDrawer
 import com.duchastel.simon.simplelauncher.libs.ui.theme.SimpleLauncherTheme
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.foundation.CircuitCompositionLocals
@@ -40,15 +39,11 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = Color.Transparent, // transparent to allow wallpaper to display
                     ) {
-                        val pagerState = rememberPagerState(pageCount = { 2 })
-                        VerticalPager(
-                            state = pagerState,
-                            modifier = Modifier
-                        ) { page ->
-                            when (page) {
-                                0 -> CircuitContent(HomepageScreen)
-                                1 -> CircuitContent(AppListScreen)
-                            }
+                        VerticalSlidingDrawer(
+                            modifier = Modifier.fillMaxSize(),
+                            drawerContent = { CircuitContent(AppListScreen) },
+                        ) {
+                            CircuitContent(HomepageScreen)
                         }
                     }
                 }
