@@ -4,9 +4,12 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -19,32 +22,30 @@ fun VerticalSlidingDrawer(
     content: @Composable () -> Unit,
     drawerContent: @Composable () -> Unit
 ) {
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            skipHiddenState = false
-        )
-    )
+    val sheetState = rememberStandardBottomSheetState()
     val scope = rememberCoroutineScope()
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetContent = {
-            drawerContent()
-        }
-    ) {
-        Box(
-            modifier = Modifier.pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    val y = dragAmount.y
-                    if (y < 0) {
-                        scope.launch {
-                            scaffoldState.bottomSheetState.expand()
-                        }
+    rememberSwipeToDismissBoxState()
+    Box(
+        modifier = Modifier.pointerInput(Unit) {
+            detectDragGestures { change, dragAmount ->
+                val y = dragAmount.y
+                if (y < 0) {
+                    scope.launch {
+                        sheetState.expand()
+                        sheetState.targetValue
                     }
                 }
             }
+        }
+    ) {
+        content()
+    }
+    if (sheetState.isVisible) {
+        ModalBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = { scope.launch { sheetState.hide() } },
         ) {
-            content()
+            drawerContent()
         }
     }
 }

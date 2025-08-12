@@ -5,10 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.Modifier
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
-import com.duchastel.simon.simplelauncher.ui.components.VerticalSlidingDrawer
+import com.duchastel.simon.simplelauncher.ui.components.CustomSwipeableDrawer
 import com.duchastel.simon.simplelauncher.ui.theme.SimpleLauncherTheme
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.foundation.CircuitCompositionLocals
@@ -32,8 +34,8 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        VerticalSlidingDrawer(
-                            content = { Homepage() },
+                        CustomSwipeableDrawer(
+                            mainContent = { Homepage() },
                             drawerContent = { CircuitContent(AppListScreen) }
                         )
                     }
