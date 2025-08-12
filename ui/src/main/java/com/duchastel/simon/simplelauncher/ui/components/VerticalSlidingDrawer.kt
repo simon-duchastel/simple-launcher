@@ -1,51 +1,75 @@
 package com.duchastel.simon.simplelauncher.ui.components
 
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberStandardBottomSheetState
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
+
+enum class DragAnchors {
+    Hidden,
+    Expanded,
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerticalSlidingDrawer(
+    modifier: Modifier = Modifier,
+    drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
-    drawerContent: @Composable () -> Unit
 ) {
-    val sheetState = rememberStandardBottomSheetState()
-    val scope = rememberCoroutineScope()
-    rememberSwipeToDismissBoxState()
-    Box(
-        modifier = Modifier.pointerInput(Unit) {
-            detectDragGestures { change, dragAmount ->
-                val y = dragAmount.y
-                if (y < 0) {
-                    scope.launch {
-                        sheetState.expand()
-                        sheetState.targetValue
-                    }
-                }
-            }
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val density = LocalDensity.current
+        val scope: BoxWithConstraintsScope = this // necessary for lint
+        val anchors = DraggableAnchors {
+            DragAnchors.Hidden at scope.constraints.maxHeight.toFloat()
+            DragAnchors.Expanded at 0f
         }
-    ) {
-        content()
-    }
-    if (sheetState.isVisible) {
-        ModalBottomSheet(
-            sheetState = sheetState,
-            onDismissRequest = { scope.launch { sheetState.hide() } },
+        val state: AnchoredDraggableState<DragAnchors> = remember {
+            AnchoredDraggableState<DragAnchors>(
+                initialValue = DragAnchors.Hidden,
+                anchors = anchors,
+            )
+        }
+        val interactionSource = remember { MutableInteractionSource() }
+
+        Box(
+            modifier = modifier
+                .anchoredDraggable(
+                    state = state,
+                    orientation = Orientation.Vertical,
+                    reverseDirection = false,
+                    interactionSource = interactionSource
+                )
         ) {
-            drawerContent()
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                content()
+            }
+            Box(
+                modifier = Modifier
+                    .offset {
+                        IntOffset(
+                            0,
+                            state.offset.roundToInt()
+                        )
+                    }
+            ) {
+                drawerContent()
+            }
         }
     }
 }
