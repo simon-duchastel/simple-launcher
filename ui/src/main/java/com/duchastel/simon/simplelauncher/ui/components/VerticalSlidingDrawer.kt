@@ -1,9 +1,11 @@
 package com.duchastel.simon.simplelauncher.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -17,7 +19,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
 import kotlin.math.roundToInt
 
 enum class DragAnchors {
@@ -44,38 +51,63 @@ fun VerticalSlidingDrawer(
                 anchors = anchors,
             )
         }
+        val flingBehavior = AnchoredDraggableDefaults.flingBehavior(state)
         val interactionSource = remember { MutableInteractionSource() }
+        val nestedScrollConnection = remember {
+            object : NestedScrollConnection {
+                override fun onPostScroll(
+                    consumed: Offset,
+                    available: Offset,
+                    source: NestedScrollSource
+                ): Offset {
+                    val additionalConsumedY = state.dispatchRawDelta(available.y)
+                    val remainingAvailableY =  available.y - additionalConsumedY
+                    return Offset(available.x, remainingAvailableY)
+                }
+
+                override suspend fun onPostFling(
+                    consumed: Velocity,
+                    available: Velocity
+                ): Velocity {
+                    var remainingAvailableVelocityY = available.y
+                    state.anchoredDrag {
+                        val scrollFlingScope =
+                            object : ScrollScope {
+                                override fun scrollBy(pixels: Float): Float {
+                                    dragTo(state.offset + pixels)
+                                    return pixels
+                                }
+                            }
+                        remainingAvailableVelocityY = with(flingBehavior) {
+                            scrollFlingScope.performFling(available.y)
+                        }
+                    }
+                    return Velocity(x = 0f, y = remainingAvailableVelocityY)
+                }
+            }
+        }
 
         Box(
-            modifier = modifier
-                .anchoredDraggable(
-                    state = state,
-                    orientation = Orientation.Vertical,
-                    overscrollEffect = rememberOverscrollEffect(),
-                    reverseDirection = false,
-                    interactionSource = interactionSource
-                )
+            modifier = modifier.nestedScroll(nestedScrollConnection)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .anchoredDraggable(
+                        state = state,
+                        orientation = Orientation.Vertical,
+                        overscrollEffect = rememberOverscrollEffect(),
+                        flingBehavior = flingBehavior,
+                        reverseDirection = false,
+                        interactionSource = interactionSource,
+                    )
             ) {
                 content()
             }
             Box(
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.background)
-                    .offset {
-                        IntOffset(
-                            0,
-                            state.offset.roundToInt()
-                        )
-                    }.anchoredDraggable(
-                        state = state,
-                        orientation = Orientation.Vertical,
-                        reverseDirection = false,
-                        interactionSource = interactionSource
-                    )
+                    .offset { IntOffset(0, state.offset.roundToInt()) }
             ) {
                 drawerContent()
             }
