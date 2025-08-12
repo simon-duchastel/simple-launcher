@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
                 SimpleLauncherTheme {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background
+                        color = MaterialTheme.colorScheme.background,
                     ) {
                         VerticalSlidingDrawer(
                             modifier = Modifier.fillMaxSize(),
