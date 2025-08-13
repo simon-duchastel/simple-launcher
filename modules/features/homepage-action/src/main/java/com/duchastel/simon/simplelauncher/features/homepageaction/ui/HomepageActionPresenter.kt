@@ -62,10 +62,13 @@ class HomepageActionPresenter @AssistedInject internal constructor(
                     if (success) {
                         val duration = endTime - startTime
                         val count = (duration.inWholeMilliseconds / 500).toInt().coerceAtLeast(1)
-                        smsRepository.sendSms(
+                        val sentResult = smsRepository.sendSms(
                             config.smsDestination,
                             config.emoji.repeat(count),
-                        )
+                        ).unwrap()
+                        if (sentResult != null) {
+                            val deliveredResult = sentResult().unwrap()
+                        }
                     }
                 }
             },

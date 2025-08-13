@@ -26,6 +26,20 @@ class SmsBroadcastReceiverFactoryImpl @Inject internal constructor(
         }
     }
 
+    override fun createDeliveredSmsBroadcastReceiver(
+        messageId: String,
+        onDeliveredSmsReceived: (successfullyDelivered: Boolean, broadcastReceiver: BroadcastReceiver) -> Unit,
+    ): BroadcastReceiver {
+        return object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context?, intent: Intent?) {
+                if (intent?.extras?.getString(EXTRA_MESSAGE_ID) != messageId) return
+
+                val successful = resultCode == Activity.RESULT_OK
+                onDeliveredSmsReceived(successful, this)
+            }
+        }
+    }
+
     override fun createSentSmsPendingIntent(
         sentAction: String,
         messageId: String,
