@@ -17,7 +17,6 @@ import com.slack.circuit.runtime.screen.Screen
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -25,7 +24,6 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 @Parcelize
 data class HomepageActionButton(
@@ -69,16 +67,14 @@ class HomepageActionPresenter @AssistedInject internal constructor(
             HomepageActionState.EmojiButtonState.Ready(
                 onClick = {
                     coroutineScope.launch {
-                        debounceForAtLeast(
-                            onShow = { emojiIsLoading = true },
-                            onHide = { emojiIsLoading = false },
-                        ) {
+                        emojiIsLoading = true
+                        runForAtLeast(300.milliseconds) {
                             smsRepository.sendSms(
                                 config.smsDestination,
                                 config.emoji,
                             )
-                            delay(300.milliseconds)
                         }
+                        emojiIsLoading = false
                     }
                 },
                 onLongClick = { scope ->
@@ -90,15 +86,15 @@ class HomepageActionPresenter @AssistedInject internal constructor(
                         if (success) {
                             val duration = endTime - startTime
                             val count = (duration.inWholeMilliseconds / 500).toInt().coerceAtLeast(1)
-                            debounceForAtLeast(
-                                onShow = { emojiIsLoading = true },
-                                onHide = { emojiIsLoading = false },
-                            ) {
+
+                            emojiIsLoading = true
+                            runForAtLeast(300.milliseconds) {
                                 smsRepository.sendSms(
                                     config.smsDestination,
                                     config.emoji.repeat(count),
                                 )
                             }
+                            emojiIsLoading = false
                         }
                     }
                 },
@@ -120,34 +116,18 @@ class HomepageActionPresenter @AssistedInject internal constructor(
     }
 }
 
-// TODO - move to a utils package and rename to make more sense
+// TODO - move to a utils package
 @OptIn(ExperimentalTime::class)
-private suspend fun <T> debounceForAtLeast(
-    timeoutBeforeStarting: Duration = 10.milliseconds,
-    timeoutBeforeEnding: Duration = 200.milliseconds,
-    onShow: suspend () -> Unit,
-    onHide: suspend () -> Unit,
+private suspend fun <T> runForAtLeast(
+    forAtLeast: Duration,
     block: suspend () -> T,
-): T = coroutineScope {
-    var shownAt: Instant? = null
-    val showJob = launch {
-        delay(timeoutBeforeStarting)
-        onShow()
-        shownAt = Clock.System.now()
+): T {
+    val startedAt = Clock.System.now()
+    val result = block()
+    val timeElapsed = Clock.System.now() - startedAt
+    if (timeElapsed < forAtLeast) {
+        delay(forAtLeast - timeElapsed)
     }
 
-    val result = try {
-        block()
-    } finally {
-        showJob.cancel()
-        shownAt?.let {
-            val visibleFor = Clock.System.now() - it
-            if (visibleFor < timeoutBeforeEnding) {
-                delay(timeoutBeforeEnding - visibleFor)
-            }
-            onHide()
-        }
-    }
-
-    return@coroutineScope result
+    return result
 }
