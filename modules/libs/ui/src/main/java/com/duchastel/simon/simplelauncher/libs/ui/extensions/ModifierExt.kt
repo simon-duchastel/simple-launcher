@@ -2,7 +2,12 @@ package com.duchastel.simon.simplelauncher.libs.ui.extensions
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,15 +26,17 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
 /**
- * A modifier that provides a bounce effect when clicked. Inherently includes [clickable].
+ * A modifier that provides a bounce effect when clicked, making this Composable [clickable].
  */
 @OptIn(ExperimentalTime::class)
 fun Modifier.bounceClickable(
     onClick: () -> Unit,
     onDoubleClick: (() -> Unit)? = null,
     onLongClick: ((LongClickScope) -> Unit)? = null,
+    bounceClickableScope: BounceClickableScope? = null,
 ) = composed {
-    var isPressed by remember { mutableStateOf(false) }
+    val bounceClickableScope = bounceClickableScope ?: remember { BounceClickableScopeImpl() }
+    val isPressed by bounceClickableScope.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.9f else 1f,
         animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
@@ -41,7 +48,7 @@ fun Modifier.bounceClickable(
         .pointerInput(onDoubleClick, onClick) {
             detectTapGestures(
                 onPress = {
-                    isPressed = true
+                    bounceClickableScope.setIsPressed(true)
                     coroutineScope {
                         val successAsync = async { tryAwaitRelease() }
                         var longClick = false
@@ -58,7 +65,7 @@ fun Modifier.bounceClickable(
                         }
                         successAsync.await()
                         longPressJob.cancel()
-                        isPressed = false
+                        bounceClickableScope.setIsPressed(false)
                     }
                 },
                 onTap = { onClick() },
@@ -99,6 +106,31 @@ fun Modifier.bounceClickable(
             }
         }
     )
+}
+
+sealed interface BounceClickableScope {
+    @Composable
+    fun collectIsPressedAsState(): State<Boolean>
+}
+
+private fun BounceClickableScope.setIsPressed(value: Boolean) {
+    when (this) {
+        is BounceClickableScopeImpl -> {
+            isPressed.value = value
+        }
+    }
+}
+
+private class BounceClickableScopeImpl: BounceClickableScope {
+    var isPressed = mutableStateOf(false)
+
+    @Composable
+    override fun collectIsPressedAsState(): State<Boolean> = isPressed
+}
+
+@Composable
+fun rememberBounceClickableScope(): BounceClickableScope = remember {
+    BounceClickableScopeImpl()
 }
 
 interface LongClickScope {
