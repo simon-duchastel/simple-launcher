@@ -33,3 +33,60 @@ private suspend inline fun <R> runForAtLeast(
 
     return result
 }
+
+/**
+ * Calls the specified function [block] with `this` value as its receiver if [condition] evaluates
+ * to true and returns `this` value, otherwise just returns `this` value.
+ */
+@OptIn(ExperimentalContracts::class)
+inline fun <T> T.applyIf(
+    condition: () -> Boolean,
+    block: T.() -> Unit,
+): T {
+    contract {
+        callsInPlace(block, InvocationKind.AT_MOST_ONCE)
+    }
+    if (condition()) {
+        block()
+    }
+    return this
+}
+
+
+/**
+ * Calls the specified function [block] with `this` value as its receiver if [condition] is true and
+ * returns `this` value, otherwise just returns `this` value.
+ */
+inline fun <T> T.applyIf(
+    condition: Boolean,
+    block: T.() -> Unit,
+): T = applyIf({ condition }, block)
+
+
+/**
+ * Calls the specified function [block] with `this` value as its receiver if [condition] evaluates
+ * to true and returns the result, otherwise just returns `this` value.
+ */
+@OptIn(ExperimentalContracts::class)
+inline fun <T> T.runIf(
+    condition: () -> Boolean,
+    block: T.() -> T,
+): T {
+    contract {
+        callsInPlace(block, InvocationKind.AT_MOST_ONCE)
+    }
+    return if (condition()) {
+        block()
+    } else {
+        this
+    }
+}
+
+/**
+ * Calls the specified function [block] with `this` value as its receiver if [condition] is true and
+ * returns the result, otherwise just returns `this` value.
+ */
+inline fun <T> T.runIf(
+    condition: Boolean,
+    block: T.() -> T,
+): T = runIf({ condition }, block)
