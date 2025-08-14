@@ -6,12 +6,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@ActivityScoped
 class PermissionsRepositoryImpl @Inject internal constructor(
     private val activity: Activity,
 ) : PermissionsRepository {
