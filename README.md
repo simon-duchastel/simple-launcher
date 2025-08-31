@@ -2,7 +2,7 @@
 
 ![Cover image](images/cover-image.png)
 
-A clean, minimal Android launcher application that replaces your home screen with a simple, distraction-free interface.
+Finally, a simple Android launcher.
 
 **MANDATORY READING** - you MUST read [**How to Contribute**](docs/how-to-contribute.md) before continuing.
 
