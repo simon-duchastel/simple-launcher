@@ -54,7 +54,7 @@ This module depends on:
 
 ## Getting Started
 
-This module cannot be run in isolation. Use the root project build commands:
+You can build the app from this module:
 
 ```bash
 ./gradlew :modules:app:assembleDebug
