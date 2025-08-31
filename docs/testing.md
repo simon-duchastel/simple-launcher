@@ -44,7 +44,7 @@ modules/
 
 ### Unit Tests
 - Test business logic, data transformations, and utilities
-- Mock Android dependencies using mockito or mockk
+- Mock Android dependencies using mockito
 - Use JUnit 5 testing framework
 - Name tests descriptively: `should_returnExpectedResult_when_givenValidInput()`
 
@@ -80,9 +80,9 @@ fun settings_screen_displays_correctly() {
 
 ## Test Dependencies
 
-Common testing libraries used in this project:
+Testing libraries used in this project:
 - **JUnit 5** - Testing framework
-- **MockK** - Mocking library for Kotlin
+- **Mockito** - Mocking library for Kotlin
 - **Compose Test** - UI testing for Jetpack Compose
 - **Espresso** - Android UI testing
 - **Robolectric** - Android unit testing framework
@@ -91,7 +91,7 @@ Common testing libraries used in this project:
 ## Writing Good Tests
 
 1. **Arrange-Act-Assert**: Structure tests clearly
-2. **One assertion per test**: Keep tests focused
+2. **Few assertions per test, ideally one**: Keep tests focused
 3. **Descriptive test names**: Make intent clear
 4. **Mock external dependencies**: Keep tests isolated
 5. **Test edge cases**: Include boundary conditions and error scenarios
