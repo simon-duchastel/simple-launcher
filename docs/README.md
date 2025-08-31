@@ -7,9 +7,10 @@ Comprehensive documentation for the Simple Launcher project, designed for both h
 ## Directory
 ```
 docs/
-├── how-to-contribute.md              # Project expectations and contribution guidelines
-├── testing.md                        # Test setup, writing tests, and coverage requirements     
+├── README.md                         # Documentation overview and directory structure
 ├── docs.md                           # Documentation philosophy, structure, and maintenance
+├── how-to-contribute.md              # Project expectations and contribution guidelines
+├── testing.md                        # Test setup, writing tests, and coverage requirements
 └── technology-stack/
     └── android-technology-stack.md   # Technologies used for Android development
 ```
