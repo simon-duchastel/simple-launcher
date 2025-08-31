@@ -91,7 +91,7 @@ Testing libraries used in this project:
 ## Writing Good Tests
 
 1. **Arrange-Act-Assert**: Structure tests clearly
-2. **One assertion per test**: Keep tests focused
+2. **Few assertions per test, ideally one**: Keep tests focused
 3. **Descriptive test names**: Make intent clear
 4. **Mock external dependencies**: Keep tests isolated
 5. **Test edge cases**: Include boundary conditions and error scenarios
