@@ -10,29 +10,21 @@ Finally, a simple Android launcher.
 
 ```
 simple-launcher/
-├── modules/
-│   ├── app/                        # Main application module
-│   ├── features/                   # Feature-specific modules
-│   │   ├── app-list/              # Application listing functionality
-│   │   ├── homepage/              # Main launcher screen
-│   │   ├── homepage-action/       # Homepage interaction handlers  
-│   │   └── settings/              # Configuration and preferences
-│   └── libs/                       # Shared library modules
-│       ├── core-ext/              # Core Android extensions
-│       ├── intents/               # Intent handling utilities
-│       ├── permissions/           # Runtime permissions management
-│       ├── sms/                   # SMS functionality integration
-│       └── ui/                    # Shared UI components and theming
-└── docs/                           # Comprehensive project documentation
+│── docs/                           # Comprehensive project documentation
+└── modules/
+    ├── app/                       # Main application module
+    ├── features/                  # Feature-specific modules
+    │   ├── app-list/              # Application listing functionality
+    │   ├── homepage/              # Main launcher screen
+    │   ├── homepage-action/       # Homepage interaction handlers  
+    │   └── settings/              # Configuration and preferences
+    └── libs/                      # Shared library modules
+        ├── core-ext/              # Core Android extensions
+        ├── intents/               # Intent handling utilities
+        ├── permissions/           # Runtime permissions management
+        ├── sms/                   # SMS functionality integration
+        └── ui/                    # Shared UI components and theming
 ```
-
-## Features
-
-- **Home Screen Replacement**: Acts as Android launcher with `android.intent.category.HOME`
-- **SMS Integration**: Built-in SMS functionality with permissions management
-- **Modular Architecture**: Clean separation of concerns across feature modules
-- **Modern Android**: Kotlin-based with Jetpack Compose UI
-- **Dependency Injection**: Hilt-powered dependency management
 
 ## Getting Started
 
@@ -53,29 +45,6 @@ Install on device:
 ```bash
 ./gradlew installDebug
 ```
-
-### Build Variants
-```bash
-# Debug build
-./gradlew assembleDebug
-
-# Release build  
-./gradlew assembleRelease
-
-# Run tests
-./gradlew test
-```
-
-## Technology Stack
-
-- **Kotlin** - Primary programming language
-- **Jetpack Compose** - Modern UI toolkit
-- **Hilt** - Dependency injection
-- **Gradle** with Kotlin DSL - Build system
-- **Android Gradle Plugin** - Android build tooling
-
-For detailed technology information, see [docs/technology-stack/](docs/technology-stack/).
-
 ## Architecture
 
 This project follows a multi-module clean architecture pattern:
@@ -102,4 +71,4 @@ See [docs/testing.md](docs/testing.md) for testing guidelines.
 
 ## License
 
-[View LICENSE file](LICENSE)
+[This project is licensed under the MIT license](LICENSE)
