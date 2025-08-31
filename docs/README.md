@@ -11,6 +11,5 @@ docs/
 ├── docs.md                           # Documentation philosophy, structure, and maintenance
 ├── how-to-contribute.md              # Project expectations and contribution guidelines
 ├── testing.md                        # Test setup, writing tests, and coverage requirements
-└── technology-stack/
-    └── android-technology-stack.md   # Technologies used for Android development
+└── technology-stack.md               # Technologies used for Android development
 ```
