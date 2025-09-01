@@ -23,6 +23,7 @@ simple-launcher/
         ├── core-ext/              # Core Android extensions
         ├── intents/               # Intent handling utilities
         ├── permissions/           # Runtime permissions management
+        ├── phone-number/          # Phone number validation utilities
         ├── sms/                   # SMS functionality integration
         └── ui/                    # Shared UI components and theming
 ```
