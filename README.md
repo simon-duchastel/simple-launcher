@@ -19,6 +19,7 @@ simple-launcher/
     │   ├── homepage-action/       # Homepage interaction handlers  
     │   └── settings/              # Configuration and preferences
     └── libs/                      # Shared library modules
+        ├── contacts/              # Contact selection and data retrieval
         ├── core-ext/              # Core Android extensions
         ├── intents/               # Intent handling utilities
         ├── permissions/           # Runtime permissions management

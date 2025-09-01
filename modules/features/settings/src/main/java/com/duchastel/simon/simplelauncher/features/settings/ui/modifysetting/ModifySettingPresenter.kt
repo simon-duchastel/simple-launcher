@@ -13,6 +13,9 @@ import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
 import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingState.ButtonState
 import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingState.HomepageActionState
+import com.duchastel.simon.simplelauncher.libs.permissions.data.Permission
+import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
+import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.screen.Screen
@@ -29,6 +32,8 @@ class ModifySettingPresenter @AssistedInject internal constructor(
     @Assisted private val screen: ModifySettingScreen,
     @Assisted private val navigator: Navigator,
     private val settingsRepository: SettingsRepository,
+    private val permissionsRepository: PermissionsRepository,
+    private val contactsRepository: ContactsRepository,
 ) : Presenter<ModifySettingState> {
 
     @Composable
@@ -100,7 +105,19 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                                 navigator.pop()
                             }
                         }
-                    }
+                    },
+                    onChooseFromContactsClicked = {
+                        coroutineScope.launch {
+                            val permissionGranted = permissionsRepository.requestPermission(Permission.READ_CONTACTS)
+                            if (permissionGranted) {
+                                val contact = contactsRepository.pickContact()
+                                contact?.let {
+                                    phoneNumber = it.phoneNumber
+                                    isPhoneNumberError = phoneNumber.isNotEmpty() && !phoneNumber.isValidPhoneNumber()
+                                }
+                            }
+                        }
+                    },
                 )
             }
         }

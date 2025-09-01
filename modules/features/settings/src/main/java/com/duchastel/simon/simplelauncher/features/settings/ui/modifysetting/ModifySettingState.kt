@@ -15,6 +15,7 @@ sealed interface ModifySettingState : CircuitUiState {
         val isPhoneNumberError: Boolean,
         val onEmojiChanged: (updatedEmoji: String) -> Unit,
         val onPhoneNumberChanged: (updatedPhoneNumber: String) -> Unit,
+        val onChooseFromContactsClicked: () -> Unit,
     ) : ModifySettingState
 
     sealed interface ButtonState {
@@ -22,4 +23,5 @@ sealed interface ModifySettingState : CircuitUiState {
         data object Enabled: ButtonState
         data object Disabled: ButtonState
     }
+
 }

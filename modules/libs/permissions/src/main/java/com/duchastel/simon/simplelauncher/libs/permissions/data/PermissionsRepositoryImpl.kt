@@ -6,12 +6,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
+@ActivityScoped
 class PermissionsRepositoryImpl @Inject internal constructor(
     private val activity: Activity,
 ) : PermissionsRepository {
@@ -59,11 +61,13 @@ class PermissionsRepositoryImpl @Inject internal constructor(
     private fun Permission.asManifestPermission(): String =
         when (this) {
             Permission.SEND_SMS -> android.Manifest.permission.SEND_SMS
+            Permission.READ_CONTACTS -> android.Manifest.permission.READ_CONTACTS
         }
 
     private fun String.asPermission(): Permission? =
         when (this) {
             android.Manifest.permission.SEND_SMS -> Permission.SEND_SMS
+            android.Manifest.permission.READ_CONTACTS -> Permission.READ_CONTACTS
             else -> null
         }
 }
