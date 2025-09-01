@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
+import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
 import com.duchastel.simon.simplelauncher.libs.ui.theme.SimpleLauncherTheme
 import com.slack.circuit.backstack.rememberSaveableBackStack
 import com.slack.circuit.foundation.Circuit
@@ -31,10 +32,14 @@ class SettingsActivity : ComponentActivity() {
     @Inject
     lateinit var permissionsRepository: PermissionsRepository
 
+    @Inject
+    lateinit var contactsRepository: ContactsRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         permissionsRepository.activityOnCreate()
+        contactsRepository.activityOnCreate()
 
         setContent {
             CircuitCompositionLocals(circuit) {

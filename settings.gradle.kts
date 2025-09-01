@@ -29,5 +29,6 @@ include(":modules:features:settings")
 include(":modules:libs:core-ext")
 include(":modules:libs:sms")
 include(":modules:libs:permissions")
+include(":modules:libs:contacts")
 include(":modules:libs:intents")
  
