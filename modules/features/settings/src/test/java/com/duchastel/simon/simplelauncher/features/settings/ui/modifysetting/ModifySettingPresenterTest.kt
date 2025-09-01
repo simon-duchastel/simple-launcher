@@ -9,6 +9,7 @@ import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepos
 import com.duchastel.simon.simplelauncher.libs.contacts.data.Contact
 import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
 import com.duchastel.simon.simplelauncher.libs.phonenumber.data.PhoneNumberValidator
+import com.duchastel.simon.simplelauncher.libs.emoji.data.EmojiValidator
 import com.slack.circuit.test.FakeNavigator
 import com.slack.circuit.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,6 +31,7 @@ class ModifySettingPresenterTest {
     private val permissionsRepository: PermissionsRepository = mock()
     private val contactsRepository: ContactsRepository = mock()
     private val phoneNumberValidator: PhoneNumberValidator = mock()
+    private val emojiValidator: EmojiValidator = mock()
     private val navigator: FakeNavigator = FakeNavigator(SettingsScreen)
 
     private lateinit var presenter: ModifySettingPresenter
@@ -41,6 +43,7 @@ class ModifySettingPresenterTest {
 
     fun setupPresenter(setting: Setting) {
         whenever(phoneNumberValidator.isValidPhoneNumber(any())).thenReturn(true)
+        whenever(emojiValidator.isEmoji(any())).thenReturn(true)
 
         presenter = ModifySettingPresenter(
             ModifySettingScreen(setting),
@@ -49,6 +52,7 @@ class ModifySettingPresenterTest {
             permissionsRepository,
             contactsRepository,
             phoneNumberValidator,
+            emojiValidator,
         )
     }
 
@@ -67,6 +71,7 @@ class ModifySettingPresenterTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "😊", phoneNumber = "1234567890")
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial as SettingData?))
         whenever(phoneNumberValidator.isValidPhoneNumber("1234567890")).thenReturn(true)
+        whenever(emojiValidator.isEmoji("😊")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {

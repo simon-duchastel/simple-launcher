@@ -1,6 +1,7 @@
 package com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting
 
 import com.duchastel.simon.simplelauncher.libs.phonenumber.data.PhoneNumberValidator
+import com.duchastel.simon.simplelauncher.libs.emoji.data.EmojiValidator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +36,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
     private val permissionsRepository: PermissionsRepository,
     private val contactsRepository: ContactsRepository,
     private val phoneNumberValidator: PhoneNumberValidator,
+    private val emojiValidator: EmojiValidator,
 ) : Presenter<ModifySettingState> {
 
     @Composable
@@ -52,7 +54,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                         saveButtonState = ButtonState.Enabled
                         (it as? SettingData.HomepageActionSettingData)?.let {
                             emoji = it.emoji
-                            isEmojiError = !it.emoji.isEmoji()
+                            isEmojiError = !emojiValidator.isEmoji(it.emoji)
                             phoneNumber = it.phoneNumber
                             isPhoneNumberError = !phoneNumberValidator.isValidPhoneNumber(phoneNumber)
                         }
@@ -78,7 +80,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                     onEmojiChanged = { updatedEmoji ->
                         // don't process the change if we're loading
                         if (saveButtonState !is ButtonState.Loading) {
-                            val hasError = (updatedEmoji.isNotEmpty() && !updatedEmoji.isEmoji())
+                            val hasError = (updatedEmoji.isNotEmpty() && !emojiValidator.isEmoji(updatedEmoji))
                             if (!hasError) {
                                 // only update the emoji if it's valid
                                 emoji = updatedEmoji
@@ -122,12 +124,6 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                 )
             }
         }
-    }
-
-    private fun String.isEmoji(): Boolean {
-        val asChar = firstOrNull() ?: return false
-        return Character.getType(asChar) == Character.SURROGATE.toInt() ||
-                Character.getType(asChar) == Character.OTHER_SYMBOL.toInt()
     }
 
     @AssistedFactory

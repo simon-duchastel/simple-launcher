@@ -36,6 +36,7 @@ dependencies {
     implementation(project(":modules:libs:permissions"))
     implementation(project(":modules:libs:contacts"))
     implementation(project(":modules:libs:phone-number"))
+    implementation(project(":modules:libs:emoji"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)
