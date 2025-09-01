@@ -35,22 +35,39 @@ private fun HomepageActionContent(state: HomepageActionState, modifier: Modifier
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickContact()) { uri ->
         if (uri != null) {
-            val cursor = context.contentResolver.query(
+            // First, get the contact ID from the contact URI
+            val contactCursor = context.contentResolver.query(
                 uri,
-                arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+                arrayOf(ContactsContract.Contacts._ID),
                 null,
                 null,
                 null
             )
 
-            if (cursor?.moveToFirst() == true) {
-                val numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                if (numberIndex != -1) {
-                    val number = cursor.getString(numberIndex)
+            if (contactCursor?.moveToFirst() == true) {
+                val contactId = contactCursor.getString(
+                    contactCursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID)
+                )
+                contactCursor.close()
+
+                // Now query for phone numbers using the contact ID
+                val phoneCursor = context.contentResolver.query(
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+                    "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+                    arrayOf(contactId),
+                    null
+                )
+
+                if (phoneCursor?.moveToFirst() == true) {
+                    val numberIndex = phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                    val number = phoneCursor.getString(numberIndex)
                     state.onPhoneNumberChanged(number)
                 }
+                phoneCursor?.close()
+            } else {
+                contactCursor?.close()
             }
-            cursor?.close()
         }
     }
 
@@ -80,7 +97,10 @@ private fun HomepageActionContent(state: HomepageActionState, modifier: Modifier
                 isError = state.isPhoneNumberError,
                 modifier = Modifier.weight(1f)
             )
-            TextButton(onClick = { state.onChooseFromContactsClicked() }) {
+            TextButton(onClick = { 
+                android.util.Log.d("ModifySettingUi", "Choose from contacts button clicked")
+                state.onChooseFromContactsClicked() 
+            }) {
                 Text("Choose from contacts")
             }
         }

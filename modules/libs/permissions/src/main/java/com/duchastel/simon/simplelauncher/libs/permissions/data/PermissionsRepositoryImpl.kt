@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @ActivityScoped
 class PermissionsRepositoryImpl @Inject internal constructor(
