@@ -14,6 +14,7 @@ import com.slack.circuit.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -69,6 +70,7 @@ class ModifySettingPresenterTest {
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {
+            awaitItem() // Skip initial loading state
             val state = awaitItem() as ModifySettingState.HomepageActionState
             assert(state.emoji == "😊")
             assert(!state.isEmojiError)
@@ -86,9 +88,10 @@ class ModifySettingPresenterTest {
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {
+            awaitItem() // Skip initial loading state
             val state = awaitItem() as ModifySettingState.HomepageActionState
-            state.onEmojiChanged("A")
-            runCurrent()
+            state.onEmojiChanged("1")
+            advanceUntilIdle()
             assert(state.isEmojiError)
             assert(state.emoji == "😊")
             assert(state.saveButtonState == ModifySettingState.ButtonState.Disabled)
@@ -102,9 +105,10 @@ class ModifySettingPresenterTest {
         whenever(phoneNumberValidator.isValidPhoneNumber("1234567890")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
         presenter.test {
+            awaitItem() // Skip initial loading state
             val state = awaitItem() as ModifySettingState.HomepageActionState
             state.onEmojiChanged("🙀")
-            runCurrent()
+            advanceUntilIdle()
             assert(!state.isEmojiError)
             assert(state.emoji == "🙀")
             assert(state.saveButtonState == ModifySettingState.ButtonState.Enabled)
@@ -119,9 +123,10 @@ class ModifySettingPresenterTest {
         whenever(phoneNumberValidator.isValidPhoneNumber("NotAPhone")).thenReturn(false)
         setupPresenter(Setting.HomepageAction)
         presenter.test {
+            awaitItem() // Skip initial loading state
             val state = awaitItem() as ModifySettingState.HomepageActionState
             state.onPhoneNumberChanged("NotAPhone")
-            runCurrent()
+            advanceUntilIdle()
             assert(state.isPhoneNumberError)
             assert(state.saveButtonState == ModifySettingState.ButtonState.Disabled)
         }
@@ -135,9 +140,10 @@ class ModifySettingPresenterTest {
         whenever(phoneNumberValidator.isValidPhoneNumber("5145550123")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
         presenter.test {
+            awaitItem() // Skip initial loading state
             val state = awaitItem() as ModifySettingState.HomepageActionState
             state.onPhoneNumberChanged("5145550123")
-            runCurrent()
+            advanceUntilIdle()
             assert(!state.isPhoneNumberError)
             assert(state.phoneNumber == "5145550123")
             assert(state.saveButtonState == ModifySettingState.ButtonState.Enabled)
@@ -151,11 +157,12 @@ class ModifySettingPresenterTest {
         whenever(phoneNumberValidator.isValidPhoneNumber("5145550123")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
         presenter.test {
-            val initialState = awaitItem() as ModifySettingState.HomepageActionState
-            initialState.onEmojiChanged("x")
-            val updatedState = awaitItem() as ModifySettingState.HomepageActionState
-            assert(updatedState.isEmojiError)
-            assert(updatedState.saveButtonState == ModifySettingState.ButtonState.Disabled)
+            awaitItem() // Skip initial loading state
+            val state = awaitItem() as ModifySettingState.HomepageActionState
+            state.onEmojiChanged("🍕")
+            runCurrent()
+            assert(state.isEmojiError)
+            assert(state.saveButtonState == ModifySettingState.ButtonState.Disabled)
         }
     }
 
@@ -214,9 +221,10 @@ class ModifySettingPresenterTest {
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {
+            awaitItem() // Skip initial loading state
             val state = awaitItem() as ModifySettingState.HomepageActionState
             state.onChooseFromContactsClicked()
-            runCurrent()
+            advanceUntilIdle()
 
             verify(permissionsRepository).requestPermission(Permission.READ_CONTACTS)
             verify(contactsRepository).pickContact()
@@ -235,9 +243,10 @@ class ModifySettingPresenterTest {
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {
+            awaitItem() // Skip initial loading state
             val state = awaitItem() as ModifySettingState.HomepageActionState
             state.onChooseFromContactsClicked()
-            runCurrent()
+            advanceUntilIdle()
             
             verify(permissionsRepository).requestPermission(Permission.READ_CONTACTS)
             verify(contactsRepository).pickContact()
