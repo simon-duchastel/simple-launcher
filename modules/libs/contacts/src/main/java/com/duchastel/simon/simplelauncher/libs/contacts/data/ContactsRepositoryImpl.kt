@@ -8,9 +8,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import dagger.hilt.android.scopes.ActivityScoped
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
-import kotlin.coroutines.resume
 
 @ActivityScoped
 class ContactsRepositoryImpl @Inject internal constructor(
@@ -18,7 +21,7 @@ class ContactsRepositoryImpl @Inject internal constructor(
 ) : ContactsRepository {
 
     private lateinit var pickContactLauncher: ActivityResultLauncher<Void?>
-    private var pendingContactCallback: ((Contact?) -> Unit)? = null
+    private val contactResultFlow = MutableStateFlow<Contact?>(null)
 
     override fun activityOnCreate() {
         pickContactLauncher = (activity as ComponentActivity).registerForActivityResult(
@@ -29,20 +32,13 @@ class ContactsRepositoryImpl @Inject internal constructor(
             } else {
                 null
             }
-            pendingContactCallback?.invoke(contact)
-            pendingContactCallback = null
+            contactResultFlow.update { contact }
         }
     }
 
-    override suspend fun pickContact(): Contact? = suspendCancellableCoroutine { continuation ->
-        pendingContactCallback = { contact ->
-            continuation.resume(contact)
-        }
+    override suspend fun pickContact(): Contact? {
         pickContactLauncher.launch(null)
-
-        continuation.invokeOnCancellation {
-            pendingContactCallback = null
-        }
+        return contactResultFlow.drop(1).first()
     }
 
     @VisibleForTesting
