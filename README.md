@@ -10,7 +10,7 @@ Finally, a simple Android launcher.
 
 ```
 simple-launcher/
-│── docs/                           # Comprehensive project documentation
+│── docs/                          # Comprehensive project documentation
 └── modules/
     ├── app/                       # Main application module
     ├── features/                  # Feature-specific modules
