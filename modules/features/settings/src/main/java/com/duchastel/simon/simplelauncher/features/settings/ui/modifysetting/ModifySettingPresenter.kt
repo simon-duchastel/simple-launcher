@@ -1,6 +1,6 @@
 package com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting
 
-import android.util.Patterns
+import com.duchastel.simon.simplelauncher.libs.phonenumber.data.PhoneNumberValidator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,6 +34,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
     private val settingsRepository: SettingsRepository,
     private val permissionsRepository: PermissionsRepository,
     private val contactsRepository: ContactsRepository,
+    private val phoneNumberValidator: PhoneNumberValidator,
 ) : Presenter<ModifySettingState> {
 
     @Composable
@@ -53,7 +54,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                             emoji = it.emoji
                             isEmojiError = !it.emoji.isEmoji()
                             phoneNumber = it.phoneNumber
-                            isPhoneNumberError = !phoneNumber.isValidPhoneNumber()
+                            isPhoneNumberError = !phoneNumberValidator.isValidPhoneNumber(phoneNumber)
                         }
                     }
                 }
@@ -89,7 +90,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                         // don't process the change if we're loading
                         if (saveButtonState !is ButtonState.Loading) {
                             phoneNumber = updatedPhoneNumber
-                            isPhoneNumberError = phoneNumber.isNotEmpty() && !updatedPhoneNumber.isValidPhoneNumber()
+                            isPhoneNumberError = phoneNumber.isNotEmpty() && !phoneNumberValidator.isValidPhoneNumber(updatedPhoneNumber)
                         }
                     },
                     saveButtonState = saveButtonState,
@@ -113,7 +114,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                                 val contact = contactsRepository.pickContact()
                                 contact?.let {
                                     phoneNumber = it.phoneNumber
-                                    isPhoneNumberError = phoneNumber.isNotEmpty() && !phoneNumber.isValidPhoneNumber()
+                                    isPhoneNumberError = phoneNumber.isNotEmpty() && !phoneNumberValidator.isValidPhoneNumber(phoneNumber)
                                 }
                             }
                         }
@@ -127,10 +128,6 @@ class ModifySettingPresenter @AssistedInject internal constructor(
         val asChar = firstOrNull() ?: return false
         return Character.getType(asChar) == Character.SURROGATE.toInt() ||
                 Character.getType(asChar) == Character.OTHER_SYMBOL.toInt()
-    }
-
-    private fun String.isValidPhoneNumber(): Boolean {
-        return Patterns.PHONE.matcher(this).matches()
     }
 
     @AssistedFactory

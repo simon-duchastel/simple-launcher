@@ -8,6 +8,7 @@ import com.duchastel.simon.simplelauncher.libs.permissions.data.Permission
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import com.duchastel.simon.simplelauncher.libs.contacts.data.Contact
 import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
+import com.duchastel.simon.simplelauncher.libs.phonenumber.data.PhoneNumberValidator
 import com.slack.circuit.test.FakeNavigator
 import com.slack.circuit.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -28,6 +28,7 @@ class ModifySettingPresenterTest {
     private val repository: SettingsRepository = mock()
     private val permissionsRepository: PermissionsRepository = mock()
     private val contactsRepository: ContactsRepository = mock()
+    private val phoneNumberValidator: PhoneNumberValidator = mock()
     private val navigator: FakeNavigator = FakeNavigator(SettingsScreen)
 
     private lateinit var presenter: ModifySettingPresenter
@@ -38,12 +39,15 @@ class ModifySettingPresenterTest {
     }
 
     fun setupPresenter(setting: Setting) {
+        whenever(phoneNumberValidator.isValidPhoneNumber(any())).thenReturn(true)
+
         presenter = ModifySettingPresenter(
             ModifySettingScreen(setting),
             navigator,
             repository,
             permissionsRepository,
             contactsRepository,
+            phoneNumberValidator,
         )
     }
 
@@ -57,11 +61,11 @@ class ModifySettingPresenterTest {
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - present sets initial state from repository valid data`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "😊", phoneNumber = "1234567890")
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial))
+        whenever(phoneNumberValidator.isValidPhoneNumber("1234567890")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {
@@ -74,11 +78,11 @@ class ModifySettingPresenterTest {
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - emoji change with invalid input sets error and does not update value`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "😊", phoneNumber = "1234567890")
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial))
+        whenever(phoneNumberValidator.isValidPhoneNumber("1234567890")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {
@@ -91,11 +95,11 @@ class ModifySettingPresenterTest {
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - emoji change with valid emoji updates value and clears error`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "", phoneNumber = "1234567890")
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial))
+        whenever(phoneNumberValidator.isValidPhoneNumber("1234567890")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
         presenter.test {
             val state = awaitItem() as ModifySettingState.HomepageActionState
@@ -107,11 +111,12 @@ class ModifySettingPresenterTest {
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - phone number change with invalid input sets error and disables save`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "😂", phoneNumber = "1234567890")
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial))
+        whenever(phoneNumberValidator.isValidPhoneNumber("1234567890")).thenReturn(true)
+        whenever(phoneNumberValidator.isValidPhoneNumber("NotAPhone")).thenReturn(false)
         setupPresenter(Setting.HomepageAction)
         presenter.test {
             val state = awaitItem() as ModifySettingState.HomepageActionState
@@ -122,11 +127,12 @@ class ModifySettingPresenterTest {
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - phone number change with valid input updates value and enables save`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "😂", phoneNumber = "")
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial))
+        whenever(phoneNumberValidator.isValidPhoneNumber("")).thenReturn(false)
+        whenever(phoneNumberValidator.isValidPhoneNumber("5145550123")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
         presenter.test {
             val state = awaitItem() as ModifySettingState.HomepageActionState
@@ -138,22 +144,21 @@ class ModifySettingPresenterTest {
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - save button is disabled when emoji error present`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "😊", phoneNumber = "5145550123")
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial))
+        whenever(phoneNumberValidator.isValidPhoneNumber("5145550123")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
         presenter.test {
-            val state = awaitItem() as ModifySettingState.HomepageActionState
-            state.onEmojiChanged("x")
-            runCurrent()
-            assert(state.isEmojiError)
-            assert(state.saveButtonState == ModifySettingState.ButtonState.Disabled)
+            val initialState = awaitItem() as ModifySettingState.HomepageActionState
+            initialState.onEmojiChanged("x")
+            val updatedState = awaitItem() as ModifySettingState.HomepageActionState
+            assert(updatedState.isEmojiError)
+            assert(updatedState.saveButtonState == ModifySettingState.ButtonState.Disabled)
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - save calls repository and pops navigator on success`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "🍕", phoneNumber = "5145550123")
@@ -161,6 +166,7 @@ class ModifySettingPresenterTest {
         whenever(repository.saveSetting(any<SettingData.HomepageActionSettingData>())).thenReturn(
             true
         )
+        whenever(phoneNumberValidator.isValidPhoneNumber("5145550123")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
         presenter.test {
             val state = awaitItem() as ModifySettingState.HomepageActionState
@@ -171,15 +177,17 @@ class ModifySettingPresenterTest {
             )
 
             navigator.awaitPop()
+
+            cancelAndConsumeRemainingEvents()
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - onChooseFromContactsClicked when permission is denied`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "😊", phoneNumber = "")
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial))
         whenever(permissionsRepository.requestPermission(Permission.READ_CONTACTS)).thenReturn(false)
+        whenever(phoneNumberValidator.isValidPhoneNumber("")).thenReturn(false)
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {
@@ -189,10 +197,11 @@ class ModifySettingPresenterTest {
             
             verify(permissionsRepository).requestPermission(Permission.READ_CONTACTS)
             assert(state.phoneNumber.isEmpty())
+
+            cancelAndConsumeRemainingEvents()
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - onChooseFromContactsClicked when permission granted and contact selected`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "😊", phoneNumber = "")
@@ -200,6 +209,8 @@ class ModifySettingPresenterTest {
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial))
         whenever(permissionsRepository.requestPermission(Permission.READ_CONTACTS)).thenReturn(true)
         whenever(contactsRepository.pickContact()).thenReturn(contact)
+        whenever(phoneNumberValidator.isValidPhoneNumber("")).thenReturn(false)
+        whenever(phoneNumberValidator.isValidPhoneNumber("5145550123")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {
@@ -214,13 +225,13 @@ class ModifySettingPresenterTest {
         }
     }
 
-    @Ignore("TODO - remove @ignore once regex pattern is mocked")
     @Test
     fun `HomepageAction - onChooseFromContactsClicked when permission granted but no contact selected`() = runTest {
         val initial = SettingData.HomepageActionSettingData(emoji = "😊", phoneNumber = "initialNumber")
         whenever(repository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(initial))
         whenever(permissionsRepository.requestPermission(Permission.READ_CONTACTS)).thenReturn(true)
         whenever(contactsRepository.pickContact()).thenReturn(null)
+        whenever(phoneNumberValidator.isValidPhoneNumber("initialNumber")).thenReturn(true)
         setupPresenter(Setting.HomepageAction)
 
         presenter.test {

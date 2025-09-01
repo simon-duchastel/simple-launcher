@@ -31,4 +31,5 @@ include(":modules:libs:sms")
 include(":modules:libs:permissions")
 include(":modules:libs:contacts")
 include(":modules:libs:intents")
+include(":modules:libs:phone-number")
  
