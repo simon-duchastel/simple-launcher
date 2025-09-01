@@ -8,9 +8,9 @@ import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppList
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListState
+import androidx.compose.ui.Modifier
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListState.App
 import kotlinx.collections.immutable.toImmutableList
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,7 +21,6 @@ class AppListTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    @Ignore("TODO - stop ignoring once compose tests are working")
     @Test
     fun appList_displaysApps() {
         composeTestRule.setContent {
@@ -41,7 +40,9 @@ class AppListTest {
                             onClicked = { },
                         )
                     ).toImmutableList()
-                )
+                ),
+                onSettingsClicked = {},
+                modifier = Modifier
             )
         }
 
