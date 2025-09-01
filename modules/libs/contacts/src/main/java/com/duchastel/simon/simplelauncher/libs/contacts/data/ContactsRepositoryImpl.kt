@@ -6,6 +6,7 @@ import android.provider.ContactsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.VisibleForTesting
 import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
@@ -38,13 +39,14 @@ class ContactsRepositoryImpl @Inject internal constructor(
             continuation.resume(contact)
         }
         pickContactLauncher.launch(null)
-        
+
         continuation.invokeOnCancellation {
             pendingContactCallback = null
         }
     }
 
-    private fun resolveContact(uri: Uri): Contact? {
+    @VisibleForTesting
+    fun resolveContact(uri: Uri): Contact? {
         val contactCursor = activity.contentResolver.query(
             uri,
             arrayOf(ContactsContract.Contacts._ID),
