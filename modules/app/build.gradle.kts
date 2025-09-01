@@ -49,6 +49,7 @@ dependencies {
     implementation(project(":modules:features:homepage-action"))
     implementation(project(":modules:features:app-list"))
     implementation(project(":modules:libs:permissions"))
+    implementation(project(":modules:libs:contacts"))
     implementation(project(":modules:features:homepage"))
     implementation(project(":modules:features:settings"))
 

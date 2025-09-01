@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
 import com.duchastel.simon.simplelauncher.features.homepage.ui.HomepageScreen
+import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import com.duchastel.simon.simplelauncher.libs.ui.components.VerticalSlidingDrawer
 import com.duchastel.simon.simplelauncher.libs.ui.theme.SimpleLauncherTheme
@@ -27,10 +28,14 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var permissionsRepository: PermissionsRepository
 
+    @Inject
+    lateinit var contactsRepository: ContactsRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         permissionsRepository.activityOnCreate()
+        contactsRepository.activityOnCreate()
 
         setContent {
             CircuitCompositionLocals(circuit) {
