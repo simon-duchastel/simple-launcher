@@ -1,10 +1,10 @@
 # Emoji Library
 
-Contains emoji validation utilities.
+Contains emoji utilities.
 
 ## Purpose
 
-This library module provides emoji validation functionality that can be easily mocked in unit tests. It abstracts emoji character type checking to enable testable and injectable validation logic for UI components.
+This library module provides emoji functionality, including validation.
 
 ## Key Components
 
@@ -35,15 +35,3 @@ lateinit var emojiValidator: EmojiValidator
 // Validate emoji
 val isValid = emojiValidator.isEmoji("😀")
 ```
-
-## Supported Emoji Types
-
-The validator recognizes emoji characters by checking:
-- **Surrogate pairs** - Most modern emojis (😀, 🎉, 👍)
-- **Symbol characters** - Traditional symbols (♣️, ⭐, ©️)
-
-## Validation Rules
-
-- Returns `true` for valid single emoji characters
-- Returns `false` for empty strings, regular text, or multi-character strings
-- Only validates the first character of the input string

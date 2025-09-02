@@ -31,7 +31,7 @@ class EmojiValidatorImplTest {
     }
 
     @Test
-    fun shouldReturnFalseForNonEmojis() {
+    fun shouldReturnFalseForNonEmojiCharacters() {
         // Regular text
         assert(!validator.isEmoji("a"))
         assert(!validator.isEmoji("1"))
@@ -47,16 +47,19 @@ class EmojiValidatorImplTest {
     }
 
     @Test
-    fun shouldReturnFalseForEdgeCases() {
-        // Empty string
-        assert(!validator.isEmoji(""))
-        
-        // Whitespace
-        assert(!validator.isEmoji(" "))
-        assert(!validator.isEmoji("   "))
-        
+    fun shouldReturnFalseForMultipleCharacters() {
         // Multi-character strings starting with non-emoji
         assert(!validator.isEmoji("a😀"))
         assert(!validator.isEmoji("1❤️"))
+    }
+
+    @Test
+    fun shouldReturnFalseForWhitespaceAndEmptyStrings() {
+        // Empty string
+        assert(!validator.isEmoji(""))
+
+        // Whitespace
+        assert(!validator.isEmoji(" "))
+        assert(!validator.isEmoji("   "))
     }
 }

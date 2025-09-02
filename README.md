@@ -21,7 +21,7 @@ simple-launcher/
     └── libs/                      # Shared library modules
         ├── contacts/              # Contact selection and data retrieval
         ├── core-ext/              # Core Android extensions
-        ├── emoji/                 # Emoji validation utilities
+        ├── emoji/                 # Emoji utilities
         ├── intents/               # Intent handling utilities
         ├── permissions/           # Runtime permissions management
         ├── phone-number/          # Phone number validation utilities
