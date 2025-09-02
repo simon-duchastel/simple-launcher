@@ -15,6 +15,7 @@ accompanist = "0.34.0"
 mockitoCore = "5.2.0"
 mockitoKotlin = "5.2.1"
 coroutines = "1.8.0"
+robolectric = "4.13"
 uiToolingPreviewAndroid = "1.8.3"
 datastorePreferences = "1.2.0-alpha02"
 lifecycleViewmodelKtx = "2.8.0-alpha02"
@@ -60,6 +61,7 @@ androidx-compose-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-
 circuit-test = { module = "com.slack.circuit:circuit-test", version.ref = "circuit" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
 
 
