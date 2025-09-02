@@ -1,15 +1,21 @@
 package com.duchastel.simon.simplelauncher.features.appwidgets.ui.widget
 
+import android.appwidget.AppWidgetHostView
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.AppWidgetRepository
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetViewState
 import com.slack.circuit.runtime.presenter.Presenter
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.launch
 
 class AppWidgetPresenter @AssistedInject internal constructor(
     @Assisted private val screen: AppWidgetScreen,
@@ -18,24 +24,44 @@ class AppWidgetPresenter @AssistedInject internal constructor(
 
     @Composable
     override fun present(): AppWidgetState {
-        var isLoading by remember { mutableStateOf(false) }
-        var error by remember { mutableStateOf<String?>(null) }
+        val scope = rememberCoroutineScope()
+        val widgetViewState by appWidgetRepository.getWidgetViewState(screen.widgetData.widgetId).collectAsState(initial = WidgetViewState.Loading)
+        var widgetHostView by remember { mutableStateOf<AppWidgetHostView?>(null) }
+
+        LaunchedEffect(screen.widgetData.widgetId) {
+            // Create widget view through repository
+            appWidgetRepository.createWidgetView(screen.widgetData).fold(
+                onSuccess = { hostView ->
+                    widgetHostView = hostView
+                },
+                onFailure = {
+                    // Error is already handled in repository through widget view state
+                }
+            )
+        }
 
         return AppWidgetState(
             widgetData = screen.widgetData,
-            isLoading = isLoading,
-            error = error,
+            widgetViewState = widgetViewState,
+            widgetHostView = widgetHostView,
             onRetry = {
-                error = null
-                // Could trigger a widget refresh here if needed
+                scope.launch {
+                    widgetHostView = null
+                    appWidgetRepository.createWidgetView(screen.widgetData).fold(
+                        onSuccess = { hostView ->
+                            widgetHostView = hostView
+                        },
+                        onFailure = {
+                            // Error is already handled in repository
+                        }
+                    )
+                }
             },
             onRemoveWidget = {
-                isLoading = true
-                // Remove the widget (this would typically trigger navigation back)
-                // Note: Implementation would depend on how removal is handled in the app
-            },
-            onWidgetError = { throwable ->
-                error = throwable.message ?: "Unknown widget error"
+                scope.launch {
+                    appWidgetRepository.removeWidget(screen.widgetData.widgetId)
+                    // Note: Navigation back would be handled by the calling component
+                }
             }
         )
     }

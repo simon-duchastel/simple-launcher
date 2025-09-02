@@ -1,5 +1,6 @@
 package com.duchastel.simon.simplelauncher.features.appwidgets.data
 
+import android.appwidget.AppWidgetHostView
 import android.appwidget.AppWidgetProviderInfo
 import kotlinx.coroutines.flow.Flow
 
@@ -49,4 +50,14 @@ interface AppWidgetRepository {
      * Updates widget options (size, etc.)
      */
     suspend fun updateWidgetOptions(widgetId: Int, width: Int, height: Int): Result<Unit>
+    
+    /**
+     * Creates a widget host view for the given widget data
+     */
+    suspend fun createWidgetView(widgetData: WidgetData): Result<AppWidgetHostView>
+    
+    /**
+     * Gets the widget view state for a specific widget
+     */
+    fun getWidgetViewState(widgetId: Int): Flow<WidgetViewState>
 }

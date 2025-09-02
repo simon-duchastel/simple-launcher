@@ -53,9 +53,7 @@ abstract class AppWidgetsModule {
 
         @Provides
         @IntoSet
-        fun provideAppWidgetUiFactory(
-            appWidgetHost: LauncherAppWidgetHost
-        ): Ui.Factory = Ui.Factory { screen, context ->
+        fun provideAppWidgetUiFactory(): Ui.Factory = Ui.Factory { screen, context ->
             when (screen) {
                 is AppWidgetScreen -> {
                     object : Ui<AppWidgetState> {
@@ -63,7 +61,6 @@ abstract class AppWidgetsModule {
                         override fun Content(state: AppWidgetState, modifier: Modifier) {
                             AppWidgetUi(
                                 state = state,
-                                appWidgetHost = appWidgetHost,
                                 modifier = modifier
                             )
                         }

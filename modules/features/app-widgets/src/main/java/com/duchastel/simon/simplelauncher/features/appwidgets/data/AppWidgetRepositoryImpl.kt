@@ -1,5 +1,6 @@
 package com.duchastel.simon.simplelauncher.features.appwidgets.data
 
+import android.appwidget.AppWidgetHostView
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
@@ -11,6 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,6 +24,7 @@ class AppWidgetRepositoryImpl @Inject constructor(
 ) : AppWidgetRepository {
 
     private val _boundWidgets = MutableStateFlow<List<WidgetData>>(emptyList())
+    private val _widgetViewStates = MutableStateFlow<Map<Int, WidgetViewState>>(emptyMap())
 
     override fun getAvailableWidgets(): List<WidgetProviderInfo> {
         return appWidgetManager.installedProviders.map { provider ->
@@ -159,5 +162,40 @@ class AppWidgetRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    override suspend fun createWidgetView(widgetData: WidgetData): Result<AppWidgetHostView> {
+        return try {
+            updateWidgetViewState(widgetData.widgetId, WidgetViewState.Loading)
+            
+            val providerInfo = appWidgetManager.getAppWidgetInfo(widgetData.widgetId)
+            if (providerInfo == null) {
+                updateWidgetViewState(widgetData.widgetId, WidgetViewState.Error(WidgetError.ProviderNotFound))
+                return Result.failure(IllegalStateException("Widget provider info not found"))
+            }
+            
+            val hostView = appWidgetHost.createView(context, widgetData.widgetId, providerInfo)
+            updateWidgetViewState(widgetData.widgetId, WidgetViewState.Success(widgetData))
+            
+            Result.success(hostView)
+        } catch (e: SecurityException) {
+            updateWidgetViewState(widgetData.widgetId, WidgetViewState.Error(WidgetError.PermissionDenied))
+            Result.failure(e)
+        } catch (e: Exception) {
+            updateWidgetViewState(widgetData.widgetId, WidgetViewState.Error(WidgetError.HostCreationFailed))
+            Result.failure(e)
+        }
+    }
+
+    override fun getWidgetViewState(widgetId: Int): Flow<WidgetViewState> {
+        return _widgetViewStates.map { states ->
+            states[widgetId] ?: WidgetViewState.Loading
+        }
+    }
+    
+    private fun updateWidgetViewState(widgetId: Int, state: WidgetViewState) {
+        val currentStates = _widgetViewStates.value.toMutableMap()
+        currentStates[widgetId] = state
+        _widgetViewStates.value = currentStates
     }
 }
