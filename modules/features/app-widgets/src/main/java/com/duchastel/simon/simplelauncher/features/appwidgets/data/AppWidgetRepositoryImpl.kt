@@ -18,7 +18,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AppWidgetRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val appWidgetHost: LauncherAppWidgetHost,
     private val appWidgetManager: AppWidgetManager
 ) : AppWidgetRepository {
