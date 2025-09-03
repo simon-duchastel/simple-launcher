@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetViewState
 import com.duchastel.simon.simplelauncher.features.appwidgets.ui.compose.AppWidgetHostCompose
 import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionButton
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
@@ -47,8 +48,9 @@ internal fun Homepage(state: HomepageState) {
         if (state.widgetData != null) {
             AppWidgetHostCompose(
                 widgetData = state.widgetData,
-                modifier = Modifier.align(Alignment.Center),
-                onError = { /* TODO: Handle widget error */ }
+                widgetViewState = WidgetViewState.Loading, // TODO: Proper widget state management
+                widgetHostView = null, // TODO: Proper widget host view management  
+                modifier = Modifier.align(Alignment.Center)
             )
         } else {
             Text(

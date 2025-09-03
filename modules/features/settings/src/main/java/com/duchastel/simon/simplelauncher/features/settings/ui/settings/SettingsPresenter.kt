@@ -1,8 +1,6 @@
 package com.duchastel.simon.simplelauncher.features.settings.ui.settings
 
 import androidx.compose.runtime.Composable
-import com.duchastel.simon.simplelauncher.features.appwidgets.ui.selection.WidgetSelectionScreen
-import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingScreen
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
@@ -20,10 +18,7 @@ class SettingsPresenter @AssistedInject internal constructor(
         return SettingsState(
             settingsRows = SettingsState.SettingsRow.entries.toImmutableList(),
             onSettingsRowClick = { settingsRow ->
-                when (settingsRow.toSettingDomainType()) {
-                    Setting.WidgetConfiguration -> navigator.goTo(WidgetSelectionScreen)
-                    else -> navigator.goTo(ModifySettingScreen(settingsRow.toSettingDomainType()))
-                }
+                navigator.goTo(ModifySettingScreen(settingsRow.toSettingDomainType()))
             }
         )
     }

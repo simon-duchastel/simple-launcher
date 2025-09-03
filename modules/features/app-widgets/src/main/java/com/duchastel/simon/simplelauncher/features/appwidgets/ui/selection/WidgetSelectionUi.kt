@@ -16,7 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -158,7 +158,7 @@ private fun WidgetSelectionContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        Icons.Default.Widgets,
+                        Icons.Default.Settings,
                         contentDescription = null,
                         modifier = Modifier.size(40.dp)
                     )
@@ -207,7 +207,7 @@ private fun WidgetSelectionContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        Icons.Default.Widgets,
+                        Icons.Default.Settings,
                         contentDescription = null,
                         modifier = Modifier.size(40.dp)
                     )
@@ -255,7 +255,7 @@ private fun WidgetSelectionContent(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Icon(
-                            Icons.Default.Widgets,
+                            Icons.Default.Settings,
                             contentDescription = null,
                             modifier = Modifier.size(48.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant

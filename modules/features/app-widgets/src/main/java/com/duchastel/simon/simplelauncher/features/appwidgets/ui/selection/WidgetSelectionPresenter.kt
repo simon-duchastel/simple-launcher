@@ -9,25 +9,24 @@ import androidx.compose.runtime.setValue
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.AppWidgetRepository
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetProviderInfo
-import com.duchastel.simon.simplelauncher.features.settings.data.Setting
-import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
-import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed interface WidgetSelectionResult {
+    data class Selected(val widgetData: WidgetData) : WidgetSelectionResult
+    data object Cleared : WidgetSelectionResult
+}
+
 class WidgetSelectionPresenter @Inject constructor(
     private val appWidgetRepository: AppWidgetRepository,
-    private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
 ) : Presenter<WidgetSelectionState> {
 
     @Composable
     override fun present(): WidgetSelectionState {
         var availableWidgets by remember { mutableStateOf<List<WidgetProviderInfo>>(emptyList()) }
-        var currentWidget by remember { mutableStateOf<WidgetData?>(null) }
         var isLoading by remember { mutableStateOf(true) }
         var error by remember { mutableStateOf<String?>(null) }
         
@@ -42,10 +41,6 @@ class WidgetSelectionPresenter @Inject constructor(
                     // Load available widgets
                     availableWidgets = appWidgetRepository.getAvailableWidgets()
                     
-                    // Load current widget selection
-                    val settingData = settingsRepository.getSettingsFlow(Setting.WidgetConfiguration)?.first()
-                    currentWidget = (settingData as? SettingData.WidgetConfigurationSettingData)?.widgetData
-                    
                     isLoading = false
                 } catch (e: Exception) {
                     isLoading = false
@@ -56,7 +51,7 @@ class WidgetSelectionPresenter @Inject constructor(
 
         return WidgetSelectionState(
             availableWidgets = availableWidgets,
-            currentWidget = currentWidget,
+            currentWidget = null, // Will be provided by settings module
             isLoading = isLoading,
             error = error,
             eventSink = { event ->
@@ -70,7 +65,7 @@ class WidgetSelectionPresenter @Inject constructor(
                                 
                                 result.fold(
                                     onSuccess = {
-                                        // Create widget data and save to settings
+                                        // Create widget data
                                         val widgetData = WidgetData(
                                             widgetId = widgetId,
                                             providerComponentName = event.providerInfo.componentName,
@@ -79,16 +74,7 @@ class WidgetSelectionPresenter @Inject constructor(
                                             label = event.providerInfo.label
                                         )
                                         
-                                        // Remove previous widget if exists
-                                        currentWidget?.let { oldWidget ->
-                                            appWidgetRepository.removeWidget(oldWidget.widgetId)
-                                        }
-                                        
-                                        // Save new widget selection
-                                        val settingData = SettingData.WidgetConfigurationSettingData(widgetData)
-                                        settingsRepository.saveSetting(settingData)
-                                        
-                                        currentWidget = widgetData
+                                        // For now, just navigate back - result handling will be done differently
                                         navigator.pop()
                                     },
                                     onFailure = { exception ->
@@ -102,23 +88,8 @@ class WidgetSelectionPresenter @Inject constructor(
                     }
                     
                     is WidgetSelectionEvent.ClearWidget -> {
-                        scope.launch {
-                            try {
-                                // Remove current widget
-                                currentWidget?.let { widget ->
-                                    appWidgetRepository.removeWidget(widget.widgetId)
-                                }
-                                
-                                // Clear widget selection
-                                val settingData = SettingData.WidgetConfigurationSettingData(null)
-                                settingsRepository.saveSetting(settingData)
-                                
-                                currentWidget = null
-                                navigator.pop()
-                            } catch (e: Exception) {
-                                error = "Failed to clear widget: ${e.message}"
-                            }
-                        }
+                        // For now, just navigate back - result handling will be done differently
+                        navigator.pop()
                     }
                     
                     is WidgetSelectionEvent.NavigateBack -> {
