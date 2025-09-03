@@ -60,7 +60,7 @@ data class AppListState(
 }
 
 class AppListPresenter @Inject internal constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val appRepository: AppRepository,
     private val intentLauncher: IntentLauncher,
 ) : Presenter<AppListState> {

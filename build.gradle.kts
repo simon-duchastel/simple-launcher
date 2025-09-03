@@ -7,3 +7,11 @@ plugins {
     alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.hilt) apply false
 }
+
+subprojects {
+    plugins.withId("org.jetbrains.kotlin.kapt") {
+        configure<org.jetbrains.kotlin.gradle.plugin.KaptExtension> {
+            correctErrorTypes = true
+        }
+    }
+}
