@@ -57,7 +57,3 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.test.junit4)
 }
-
-kapt {
-    correctErrorTypes = true
-}
