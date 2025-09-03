@@ -8,13 +8,13 @@ import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetViewSta
 import com.slack.circuit.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
-import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -41,56 +41,113 @@ class AppWidgetPresenterTest {
     }
 
     @Test
-    fun `presenter provides widget data from screen`() = runTest {
+    fun `state contains widget data from screen`() = runTest {
         whenever(mockRepository.getWidgetViewState(123)).thenReturn(flowOf(WidgetViewState.Loading))
         whenever(mockRepository.createWidgetView(widgetData)).thenReturn(Result.success(mockHostView))
 
         presenter.test {
-            val state = awaitItem()
+            val state = expectMostRecentItem()
             
-            assertEquals(widgetData, state.widgetData)
-            assertEquals(123, state.widgetData.widgetId)
-            assertEquals("com.example/ExampleWidget", state.widgetData.providerComponentName)
-            assertEquals("Test Widget", state.widgetData.label)
-            assertNotNull(state.onRetry)
-            assertNotNull(state.onRemoveWidget)
+            assert(state.widgetData == widgetData)
+            
+            cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun `presenter creates widget view on initialization`() = runTest {
+    fun `state shows loading initially`() = runTest {
         whenever(mockRepository.getWidgetViewState(123)).thenReturn(flowOf(WidgetViewState.Loading))
         whenever(mockRepository.createWidgetView(widgetData)).thenReturn(Result.success(mockHostView))
 
         presenter.test {
-            awaitItem()
+            val state = expectMostRecentItem()
+            
+            assert(state.widgetViewState == WidgetViewState.Loading)
+            
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `state updates when widget view state changes`() = runTest {
+        val successState = WidgetViewState.Success(widgetData)
+        whenever(mockRepository.getWidgetViewState(123)).thenReturn(
+            flowOf(WidgetViewState.Loading, successState)
+        )
+        whenever(mockRepository.createWidgetView(widgetData)).thenReturn(Result.success(mockHostView))
+
+        presenter.test {
+            awaitItem() // Skip initial loading state
+            runCurrent()
+            
+            val state = expectMostRecentItem()
+            assert(state.widgetViewState == successState)
+            
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `state contains error when repository returns error`() = runTest {
+        val error = WidgetError.ProviderNotFound
+        val errorState = WidgetViewState.Error(error)
+        whenever(mockRepository.getWidgetViewState(123)).thenReturn(flowOf(errorState))
+        whenever(mockRepository.createWidgetView(widgetData)).thenReturn(Result.success(mockHostView))
+
+        presenter.test {
+            val state = expectMostRecentItem()
+            
+            assert(state.widgetViewState == errorState)
+            
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `widget creation is triggered on widget id change`() = runTest {
+        whenever(mockRepository.getWidgetViewState(123)).thenReturn(flowOf(WidgetViewState.Loading))
+        whenever(mockRepository.createWidgetView(widgetData)).thenReturn(Result.success(mockHostView))
+
+        presenter.test {
+            advanceUntilIdle()
+            
             verify(mockRepository).createWidgetView(widgetData)
-        }
-    }
-
-    @Test
-    fun `onRetry callback invokes repository createWidgetView`() = runTest {
-        whenever(mockRepository.getWidgetViewState(123)).thenReturn(flowOf(WidgetViewState.Loading))
-        whenever(mockRepository.createWidgetView(widgetData)).thenReturn(Result.success(mockHostView))
-
-        presenter.test {
-            val state = awaitItem()
-            state.onRetry()
             
-            // Verify that createWidgetView is called at least twice (initial + retry)
-            verify(mockRepository, atLeast(2)).createWidgetView(widgetData)
+            cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun `onRemoveWidget callback invokes repository removeWidget`() = runTest {
+    fun `onRetry calls repository to create widget view again`() = runTest {
         whenever(mockRepository.getWidgetViewState(123)).thenReturn(flowOf(WidgetViewState.Loading))
         whenever(mockRepository.createWidgetView(widgetData)).thenReturn(Result.success(mockHostView))
 
         presenter.test {
-            val state = awaitItem()
+            val state = expectMostRecentItem()
+            
+            state.onRetry()
+            runCurrent()
+            
+            verify(mockRepository, times(2)).createWidgetView(widgetData)
+            
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `onRemoveWidget calls repository to remove widget`() = runTest {
+        whenever(mockRepository.getWidgetViewState(123)).thenReturn(flowOf(WidgetViewState.Loading))
+        whenever(mockRepository.createWidgetView(widgetData)).thenReturn(Result.success(mockHostView))
+
+        presenter.test {
+            val state = expectMostRecentItem()
+            
             state.onRemoveWidget()
+            runCurrent()
+            
             verify(mockRepository).removeWidget(123)
+            
+            cancelAndConsumeRemainingEvents()
         }
     }
 }
