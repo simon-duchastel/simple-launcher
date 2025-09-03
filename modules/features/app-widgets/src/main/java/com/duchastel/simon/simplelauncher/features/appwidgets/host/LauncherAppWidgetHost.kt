@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Singleton
 class LauncherAppWidgetHost @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : AppWidgetHost(context, HOST_ID) {
 
     companion object {

@@ -11,6 +11,9 @@ import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetProviderInfo
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,9 +22,9 @@ sealed interface WidgetSelectionResult {
     data object Cleared : WidgetSelectionResult
 }
 
-class WidgetSelectionPresenter @Inject constructor(
+class WidgetSelectionPresenter @AssistedInject constructor(
     private val appWidgetRepository: AppWidgetRepository,
-    private val navigator: Navigator,
+    @Assisted private val navigator: Navigator,
 ) : Presenter<WidgetSelectionState> {
 
     @Composable
@@ -95,7 +98,7 @@ class WidgetSelectionPresenter @Inject constructor(
                     is WidgetSelectionEvent.NavigateBack -> {
                         navigator.pop()
                     }
-                    
+
                     is WidgetSelectionEvent.Retry -> {
                         scope.launch {
                             try {
@@ -112,5 +115,11 @@ class WidgetSelectionPresenter @Inject constructor(
                 }
             }
         )
+    }
+
+
+    @AssistedFactory
+    fun interface Factory {
+        fun create(navigator: Navigator): WidgetSelectionPresenter
     }
 }
