@@ -15,7 +15,7 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 class SmsRepositoryImpl @Inject internal constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val permissionRepository: PermissionsRepository,
     private val smsBroadcastReceiverFactory: SmsBroadcastReceiverFactory,
 ): SmsRepository {
