@@ -9,7 +9,7 @@ import javax.inject.Inject
 import android.app.PendingIntent
 
 class SmsBroadcastReceiverFactoryImpl @Inject internal constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) : SmsBroadcastReceiverFactory {
 
     override fun createSentSmsBroadcastReceiver(
