@@ -10,7 +10,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class AppRepositoryImpl @Inject internal constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val intentLauncher: IntentLauncher,
 ) : AppRepository {
 
