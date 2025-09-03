@@ -13,6 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -75,7 +76,9 @@ class AppWidgetPresenterTest {
         presenter.test {
             val state = awaitItem()
             state.onRetry()
-            // Note: we already verified initial creation, onRetry will be an additional call
+            
+            // Verify that createWidgetView is called at least twice (initial + retry)
+            verify(mockRepository, atLeast(2)).createWidgetView(widgetData)
         }
     }
 
