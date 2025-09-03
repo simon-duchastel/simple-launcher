@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.duchastel.simon.simplelauncher.features.settings.data.PreferenceKeys.HOMEPAGE_ACTION
+import com.duchastel.simon.simplelauncher.features.settings.data.PreferenceKeys.WIDGET_CONFIGURATION
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -66,6 +67,7 @@ class SettingsRepositoryImpl @Inject internal constructor(
     private fun Setting.preferenceKey(): Preferences.Key<String> {
         return when (this) {
             Setting.HomepageAction -> HOMEPAGE_ACTION
+            Setting.WidgetConfiguration -> WIDGET_CONFIGURATION
         }
     }
 }
@@ -127,7 +129,12 @@ private object PreferenceKeys {
     val SCHEMA_VERSION = intPreferencesKey("version")
 
     /**
-     *
+     * Homepage action setting
      */
     val HOMEPAGE_ACTION = stringPreferencesKey("homepage_action")
+    
+    /**
+     * Widget configuration setting
+     */
+    val WIDGET_CONFIGURATION = stringPreferencesKey("widget_configuration")
 }

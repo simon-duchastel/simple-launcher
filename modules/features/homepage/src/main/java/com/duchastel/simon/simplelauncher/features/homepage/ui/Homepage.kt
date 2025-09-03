@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
+import com.duchastel.simon.simplelauncher.features.appwidgets.ui.compose.AppWidgetHostCompose
 import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionButton
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
@@ -31,6 +33,7 @@ data object HomepageScreen : Screen, Parcelable
 data class HomepageState(
     val text: String,
     val homepageAction: HomepageAction?,
+    val widgetData: WidgetData?,
 ) : CircuitUiState {
     data class HomepageAction(
         val emoji: String,
@@ -41,10 +44,19 @@ data class HomepageState(
 @Composable
 internal fun Homepage(state: HomepageState) {
     Box(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = state.text,
-            modifier = Modifier.align(Alignment.Center),
-        )
+        if (state.widgetData != null) {
+            AppWidgetHostCompose(
+                widgetData = state.widgetData,
+                modifier = Modifier.align(Alignment.Center),
+                onError = { /* TODO: Handle widget error */ }
+            )
+        } else {
+            Text(
+                text = state.text,
+                modifier = Modifier.align(Alignment.Center),
+            )
+        }
+        
         if (state.homepageAction != null) {
             CircuitContent(
                 HomepageActionButton(
@@ -69,14 +81,21 @@ class HomepagePresenter @Inject internal constructor(
 
     @Composable
     override fun present(): HomepageState {
-        val settings by remember {
+        val homepageActionSettings by remember {
             settingsRepository.getSettingsFlow(Setting.HomepageAction) ?: flowOf(null)
         }.collectAsState(null)
 
-        val homepageActionSettings = settings as? SettingData.HomepageActionSettingData
+        val widgetSettings by remember {
+            settingsRepository.getSettingsFlow(Setting.WidgetConfiguration) ?: flowOf(null)
+        }.collectAsState(null)
+
+        val homepageActionSettingsData = homepageActionSettings as? SettingData.HomepageActionSettingData
+        val widgetConfigurationData = widgetSettings as? SettingData.WidgetConfigurationSettingData
+        
         return HomepageState(
             text = "Welcome back...",
-            homepageAction = homepageActionSettings?.toUiType(),
+            homepageAction = homepageActionSettingsData?.toUiType(),
+            widgetData = widgetConfigurationData?.widgetData,
         )
     }
 

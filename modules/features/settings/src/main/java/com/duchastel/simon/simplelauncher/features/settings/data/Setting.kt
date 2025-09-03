@@ -6,4 +6,7 @@ import kotlinx.parcelize.Parcelize
 sealed class Setting : Parcelable {
     @Parcelize
     data object HomepageAction : Setting()
+    
+    @Parcelize
+    data object WidgetConfiguration : Setting()
 }
