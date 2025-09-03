@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,11 +22,6 @@ fun AppWidgetHostCompose(
     widgetHostView: AppWidgetHostView?,
     modifier: Modifier = Modifier
 ) {
-    DisposableEffect(widgetData.widgetId) {
-        onDispose {
-            // Clean up is handled by the presenter/repository
-        }
-    }
 
     Box(
         modifier = modifier.fillMaxSize(),

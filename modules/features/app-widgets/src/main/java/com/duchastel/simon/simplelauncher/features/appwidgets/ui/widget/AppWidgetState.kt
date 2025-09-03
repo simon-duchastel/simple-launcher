@@ -9,8 +9,8 @@ import com.slack.circuit.runtime.CircuitUiState
 @Immutable
 data class AppWidgetState(
     val widgetData: WidgetData,
-    val widgetViewState: WidgetViewState = WidgetViewState.Loading,
-    val widgetHostView: AppWidgetHostView? = null,
-    val onRetry: () -> Unit = {},
-    val onRemoveWidget: () -> Unit = {}
+    val widgetViewState: WidgetViewState,
+    val widgetHostView: AppWidgetHostView?,
+    val onRetry: () -> Unit,
+    val onRemoveWidget: () -> Unit
 ) : CircuitUiState

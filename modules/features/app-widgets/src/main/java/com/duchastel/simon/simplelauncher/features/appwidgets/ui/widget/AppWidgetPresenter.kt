@@ -29,15 +29,7 @@ class AppWidgetPresenter @AssistedInject internal constructor(
         var widgetHostView by remember { mutableStateOf<AppWidgetHostView?>(null) }
 
         LaunchedEffect(screen.widgetData.widgetId) {
-            // Create widget view through repository
-            appWidgetRepository.createWidgetView(screen.widgetData).fold(
-                onSuccess = { hostView ->
-                    widgetHostView = hostView
-                },
-                onFailure = {
-                    // Error is already handled in repository through widget view state
-                }
-            )
+            widgetHostView = appWidgetRepository.createWidgetView(screen.widgetData).getOrNull()
         }
 
         return AppWidgetState(
@@ -46,21 +38,12 @@ class AppWidgetPresenter @AssistedInject internal constructor(
             widgetHostView = widgetHostView,
             onRetry = {
                 scope.launch {
-                    widgetHostView = null
-                    appWidgetRepository.createWidgetView(screen.widgetData).fold(
-                        onSuccess = { hostView ->
-                            widgetHostView = hostView
-                        },
-                        onFailure = {
-                            // Error is already handled in repository
-                        }
-                    )
+                    widgetHostView = appWidgetRepository.createWidgetView(screen.widgetData).getOrNull()
                 }
             },
             onRemoveWidget = {
                 scope.launch {
                     appWidgetRepository.removeWidget(screen.widgetData.widgetId)
-                    // Note: Navigation back would be handled by the calling component
                 }
             }
         )
