@@ -52,7 +52,7 @@ abstract class AppWidgetsModule {
         ): Presenter.Factory = Presenter.Factory { screen, navigator, context ->
             when (screen) {
                 is AppWidgetScreen -> appWidgetFactory.create(screen)
-                is WidgetSelectionScreen -> widgetSelectionFactory.create(navigator)
+                is WidgetSelectionScreen -> widgetSelectionFactory.create(screen, navigator)
                 else -> null
             }
         }

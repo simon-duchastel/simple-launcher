@@ -1,12 +1,14 @@
 package com.duchastel.simon.simplelauncher.features.appwidgets.ui.selection
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.AppWidgetRepository
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.BindingState
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetProviderInfo
 import com.slack.circuit.runtime.Navigator
@@ -24,74 +26,54 @@ sealed interface WidgetSelectionResult {
 
 class WidgetSelectionPresenter @AssistedInject constructor(
     private val appWidgetRepository: AppWidgetRepository,
+    @Assisted private val screen: WidgetSelectionScreen,
     @Assisted private val navigator: Navigator,
 ) : Presenter<WidgetSelectionState> {
 
     @Composable
     override fun present(): WidgetSelectionState {
         var availableWidgets by remember { mutableStateOf<List<WidgetProviderInfo>>(emptyList()) }
+        var currentWidget by remember { mutableStateOf<WidgetData?>(null) }
         var isLoading by remember { mutableStateOf(true) }
         var error by remember { mutableStateOf<String?>(null) }
         
         val scope = rememberCoroutineScope()
 
-        remember {
-            scope.launch {
-                try {
-                    isLoading = true
-                    error = null
-                    
-                    // Load available widgets
-                    availableWidgets = appWidgetRepository.getAvailableWidgets()
-                    
-                    isLoading = false
-                } catch (e: Exception) {
-                    isLoading = false
-                    error = "Failed to load widgets: ${e.message}"
-                }
+        LaunchedEffect(Unit) {
+            try {
+                isLoading = true
+                error = null
+                
+                // Load available widgets
+                availableWidgets = appWidgetRepository.getAvailableWidgets()
+                
+                // Get current widget from screen parameter
+                currentWidget = screen.currentWidget
+                
+                isLoading = false
+            } catch (e: Exception) {
+                isLoading = false
+                error = "Failed to load widgets: ${e.message}"
+                currentWidget = null
             }
         }
 
         return WidgetSelectionState(
             availableWidgets = availableWidgets,
-            currentWidget = null, // Will be provided by settings module
+            currentWidget = currentWidget,
             isLoading = isLoading,
             error = error,
             eventSink = { event ->
                 when (event) {
                     is WidgetSelectionEvent.SelectWidget -> {
-                        scope.launch {
-                            try {
-                                // Allocate and bind new widget
-                                val widgetId = appWidgetRepository.allocateWidgetId()
-                                val result = appWidgetRepository.bindWidget(widgetId, event.providerInfo)
-                                
-                                result.fold(
-                                    onSuccess = {
-                                        // Create widget data
-                                        val widgetData = WidgetData(
-                                            widgetId = widgetId,
-                                            providerComponentName = event.providerInfo.componentName,
-                                            width = event.providerInfo.minWidth,
-                                            height = event.providerInfo.minHeight,
-                                            label = event.providerInfo.label
-                                        )
-                                        
-                                        // For now, just navigate back - result handling will be done differently
-                                        navigator.pop()
-                                    },
-                                    onFailure = { exception ->
-                                        error = "Failed to configure widget: ${exception.message}"
-                                    }
-                                )
-                            } catch (e: Exception) {
-                                error = "Failed to configure widget: ${e.message}"
-                            }
-                        }
+                        // For now, just navigate back - the settings module will handle the binding
+                        // In a proper implementation, this would use Circuit's result mechanism
+                        navigator.pop()
                     }
                     
                     is WidgetSelectionEvent.ClearWidget -> {
-                        // For now, just navigate back - result handling will be done differently
+                        // For now, just navigate back - the settings module will handle the clearing
+                        // In a proper implementation, this would use Circuit's result mechanism
                         navigator.pop()
                     }
                     
@@ -104,7 +86,10 @@ class WidgetSelectionPresenter @AssistedInject constructor(
                             try {
                                 isLoading = true
                                 error = null
+                                
                                 availableWidgets = appWidgetRepository.getAvailableWidgets()
+                                // Note: currentWidget will remain as-is since we can't access settings
+                                
                                 isLoading = false
                             } catch (e: Exception) {
                                 isLoading = false
@@ -120,6 +105,6 @@ class WidgetSelectionPresenter @AssistedInject constructor(
 
     @AssistedFactory
     fun interface Factory {
-        fun create(navigator: Navigator): WidgetSelectionPresenter
+        fun create(screen: WidgetSelectionScreen, navigator: Navigator): WidgetSelectionPresenter
     }
 }

@@ -69,13 +69,13 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                     onSaveButtonClicked = { /* No-op, save happens automatically */ },
                     currentWidget = currentWidget,
                     onSelectWidgetClicked = {
-                        navigator.goTo(WidgetSelectionScreen)
+                        navigator.goTo(WidgetSelectionScreen(currentWidget))
                     },
                     onClearWidgetClicked = {
                         coroutineScope.launch {
                             // Remove current widget if exists
                             currentWidget?.let { widget ->
-                                appWidgetRepository.removeWidget(widget.widgetId)
+                                appWidgetRepository.unbindWidget(widget.widgetId)
                             }
                             
                             // Clear widget setting
