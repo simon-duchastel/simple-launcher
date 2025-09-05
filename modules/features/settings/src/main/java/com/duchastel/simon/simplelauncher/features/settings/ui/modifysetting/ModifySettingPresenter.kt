@@ -9,11 +9,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.AppWidgetRepository
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
+import com.duchastel.simon.simplelauncher.features.appwidgets.ui.selection.WidgetSelectionResult
+import com.duchastel.simon.simplelauncher.features.appwidgets.ui.selection.WidgetSelectionScreen
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
 import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingState.ButtonState
 import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingState.HomepageActionState
+import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingState.WidgetConfigurationState
 import com.duchastel.simon.simplelauncher.libs.permissions.data.Permission
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
@@ -33,6 +38,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
     @Assisted private val screen: ModifySettingScreen,
     @Assisted private val navigator: Navigator,
     private val settingsRepository: SettingsRepository,
+    private val appWidgetRepository: AppWidgetRepository,
     private val permissionsRepository: PermissionsRepository,
     private val contactsRepository: ContactsRepository,
     private val phoneNumberValidator: PhoneNumberValidator,
@@ -42,6 +48,49 @@ class ModifySettingPresenter @AssistedInject internal constructor(
     @Composable
     override fun present(): ModifySettingState {
         return when (screen.setting) {
+            Setting.WidgetConfiguration -> {
+                var currentWidget by remember { mutableStateOf<WidgetData?>(null) }
+                var saveButtonState: ButtonState by remember { mutableStateOf(ButtonState.Loading) }
+                val coroutineScope = rememberCoroutineScope()
+                
+                // Load current widget setting
+                LaunchedEffect(Unit) {
+                    settingsRepository.getSettingsFlow(Setting.WidgetConfiguration)?.collect { settingData ->
+                        currentWidget = (settingData as? SettingData.WidgetConfigurationSettingData)?.widgetData
+                        saveButtonState = ButtonState.Disabled // No save needed for widget config
+                    }
+                }
+                
+                // TODO: Handle navigation result from widget selection
+                // For now, this is commented out until we fix the Circuit navigation result handling
+                
+                WidgetConfigurationState(
+                    saveButtonState = saveButtonState,
+                    onSaveButtonClicked = { /* No-op, save happens automatically */ },
+                    currentWidget = currentWidget,
+                    onSelectWidgetClicked = {
+                        navigator.goTo(WidgetSelectionScreen(currentWidget))
+                    },
+                    onClearWidgetClicked = {
+                        coroutineScope.launch {
+                            // Remove current widget if exists
+                            currentWidget?.let { widget ->
+                                appWidgetRepository.unbindWidget(widget.widgetId)
+                            }
+                            
+                            // Clear widget setting
+                            val settingData = SettingData.WidgetConfigurationSettingData(null)
+                            val saveSuccess = settingsRepository.saveSetting(settingData)
+                            if (saveSuccess) {
+                                currentWidget = null
+                                // Navigate back to settings
+                                navigator.pop()
+                            }
+                        }
+                    }
+                )
+            }
+            
             Setting.HomepageAction -> {
                 var emoji by remember { mutableStateOf("") }
                 var isEmojiError by remember { mutableStateOf(false) }

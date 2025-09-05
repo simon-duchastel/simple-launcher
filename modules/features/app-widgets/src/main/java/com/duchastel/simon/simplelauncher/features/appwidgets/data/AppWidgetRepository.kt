@@ -2,19 +2,19 @@ package com.duchastel.simon.simplelauncher.features.appwidgets.data
 
 import android.appwidget.AppWidgetHostView
 import android.appwidget.AppWidgetProviderInfo
-import kotlinx.coroutines.flow.Flow
 
 interface AppWidgetRepository {
     
     /**
      * Gets all available widget providers on the device
      */
-    fun getAvailableWidgets(): List<WidgetProviderInfo>
+    suspend fun getAvailableWidgets(): List<WidgetProviderInfo>
     
     /**
-     * Gets currently bound widgets
+     * Gets current widget display state based on provided widget data and AppWidgetManager
+     * This combines user preferences with actual binding state
      */
-    fun getBoundWidgets(): Flow<List<WidgetData>>
+    suspend fun getWidgetDisplayState(selectedWidget: WidgetData?): WidgetDisplayState
     
     /**
      * Allocates a new widget ID
@@ -24,12 +24,12 @@ interface AppWidgetRepository {
     /**
      * Binds a widget to the launcher
      */
-    suspend fun bindWidget(widgetId: Int, providerInfo: WidgetProviderInfo): Result<Unit>
+    suspend fun bindWidget(widgetId: Int, providerInfo: WidgetProviderInfo): WidgetData
     
     /**
      * Removes a widget from the launcher
      */
-    suspend fun removeWidget(widgetId: Int): Result<Unit>
+    suspend fun unbindWidget(widgetId: Int)
     
     /**
      * Checks if a widget has a configuration activity
@@ -39,7 +39,7 @@ interface AppWidgetRepository {
     /**
      * Starts the configuration activity for a widget
      */
-    suspend fun startConfigurationActivity(widgetId: Int, providerInfo: WidgetProviderInfo): Result<Unit>
+    suspend fun startConfigurationActivity(widgetId: Int, providerInfo: WidgetProviderInfo)
     
     /**
      * Gets widget provider info for a given component name
@@ -49,15 +49,10 @@ interface AppWidgetRepository {
     /**
      * Updates widget options (size, etc.)
      */
-    suspend fun updateWidgetOptions(widgetId: Int, width: Int, height: Int): Result<Unit>
+    suspend fun updateWidgetOptions(widgetId: Int, width: Int, height: Int)
     
     /**
      * Creates a widget host view for the given widget data
      */
-    suspend fun createWidgetView(widgetData: WidgetData): Result<AppWidgetHostView>
-    
-    /**
-     * Gets the widget view state for a specific widget
-     */
-    fun getWidgetViewState(widgetId: Int): Flow<WidgetViewState>
+    suspend fun createWidgetView(widgetData: WidgetData): AppWidgetHostView
 }

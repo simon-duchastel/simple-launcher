@@ -8,6 +8,10 @@ import androidx.compose.ui.Modifier
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.AppWidgetRepository
 import com.duchastel.simon.simplelauncher.features.appwidgets.data.AppWidgetRepositoryImpl
 import com.duchastel.simon.simplelauncher.features.appwidgets.host.LauncherAppWidgetHost
+import com.duchastel.simon.simplelauncher.features.appwidgets.ui.selection.WidgetSelectionPresenter
+import com.duchastel.simon.simplelauncher.features.appwidgets.ui.selection.WidgetSelectionScreen
+import com.duchastel.simon.simplelauncher.features.appwidgets.ui.selection.WidgetSelectionState
+import com.duchastel.simon.simplelauncher.features.appwidgets.ui.selection.WidgetSelectionUi
 import com.duchastel.simon.simplelauncher.features.appwidgets.ui.widget.AppWidgetPresenter
 import com.duchastel.simon.simplelauncher.features.appwidgets.ui.widget.AppWidgetScreen
 import com.duchastel.simon.simplelauncher.features.appwidgets.ui.widget.AppWidgetState
@@ -42,11 +46,13 @@ abstract class AppWidgetsModule {
 
         @Provides
         @IntoSet
-        fun provideAppWidgetPresenterFactory(
-            factory: AppWidgetPresenter.Factory
+        fun provideWidgetPresenterFactories(
+            appWidgetFactory: AppWidgetPresenter.Factory,
+            widgetSelectionFactory: WidgetSelectionPresenter.Factory,
         ): Presenter.Factory = Presenter.Factory { screen, navigator, context ->
             when (screen) {
-                is AppWidgetScreen -> factory.create(screen)
+                is AppWidgetScreen -> appWidgetFactory.create(screen)
+                is WidgetSelectionScreen -> widgetSelectionFactory.create(screen, navigator)
                 else -> null
             }
         }
@@ -60,6 +66,17 @@ abstract class AppWidgetsModule {
                         @Composable
                         override fun Content(state: AppWidgetState, modifier: Modifier) {
                             AppWidgetUi(
+                                state = state,
+                                modifier = modifier
+                            )
+                        }
+                    }
+                }
+                is WidgetSelectionScreen -> {
+                    object : Ui<WidgetSelectionState> {
+                        @Composable
+                        override fun Content(state: WidgetSelectionState, modifier: Modifier) {
+                            WidgetSelectionUi(
                                 state = state,
                                 modifier = modifier
                             )

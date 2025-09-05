@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":modules:libs:ui"))
     implementation(project(":modules:features:homepage-action"))
     implementation(project(":modules:features:settings"))
+    implementation(project(":modules:features:app-widgets"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)

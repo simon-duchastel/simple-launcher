@@ -9,24 +9,17 @@ import android.os.Build
 import android.os.Bundle
 import com.duchastel.simon.simplelauncher.features.appwidgets.host.LauncherAppWidgetHost
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AppWidgetRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val appWidgetHost: LauncherAppWidgetHost,
     private val appWidgetManager: AppWidgetManager
 ) : AppWidgetRepository {
 
-    private val _boundWidgets = MutableStateFlow<List<WidgetData>>(emptyList())
-    private val _widgetViewStates = MutableStateFlow<Map<Int, WidgetViewState>>(emptyMap())
-
-    override fun getAvailableWidgets(): List<WidgetProviderInfo> {
+    override suspend fun getAvailableWidgets(): List<WidgetProviderInfo> {
         return appWidgetManager.installedProviders.map { provider ->
             WidgetProviderInfo(
                 componentName = provider.provider.flattenToString(),
@@ -46,56 +39,101 @@ class AppWidgetRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getBoundWidgets(): Flow<List<WidgetData>> {
-        return _boundWidgets.asStateFlow()
+    override suspend fun getWidgetDisplayState(selectedWidget: WidgetData?): WidgetDisplayState {
+        // If no widget selected, return empty state
+        if (selectedWidget == null) {
+            return WidgetDisplayState(
+                selectedWidget = null,
+                boundWidget = null,
+                bindingState = BindingState.NotBound,
+                error = null
+            )
+        }
+        
+        // Check if widget is actually bound to AppWidgetManager
+        return try {
+            val providerInfo = appWidgetManager.getAppWidgetInfo(selectedWidget.widgetId)
+            if (providerInfo != null) {
+                // Verify the provider still exists and is valid
+                val componentName = android.content.ComponentName.unflattenFromString(selectedWidget.providerComponentName)
+                val availableProviders = appWidgetManager.installedProviders
+                val providerExists = availableProviders.any { it.provider == componentName }
+                
+                if (providerExists) {
+                    // Widget is bound and valid
+                    WidgetDisplayState(
+                        selectedWidget = selectedWidget,
+                        boundWidget = selectedWidget,
+                        bindingState = BindingState.Bound,
+                        error = null
+                    )
+                } else {
+                    // Widget is bound but provider was uninstalled - clean up widget ID
+                    try {
+                        appWidgetHost.deallocateWidgetId(selectedWidget.widgetId)
+                    } catch (cleanupError: Exception) {
+                        // Ignore cleanup errors, we still want to report the main issue
+                    }
+                    
+                    WidgetDisplayState(
+                        selectedWidget = selectedWidget,
+                        boundWidget = null,
+                        bindingState = BindingState.ProviderNotFound,
+                        error = WidgetError.ProviderNotFound
+                    )
+                }
+            } else {
+                // Widget was selected but is no longer bound (system cleared it, etc.)
+                WidgetDisplayState(
+                    selectedWidget = selectedWidget,
+                    boundWidget = null,
+                    bindingState = BindingState.ProviderNotFound,
+                    error = WidgetError.ProviderNotFound
+                )
+            }
+        } catch (e: SecurityException) {
+            WidgetDisplayState(
+                selectedWidget = selectedWidget,
+                boundWidget = null,
+                bindingState = BindingState.BindingFailed,
+                error = WidgetError.PermissionDenied
+            )
+        } catch (e: Exception) {
+            WidgetDisplayState(
+                selectedWidget = selectedWidget,
+                boundWidget = null,
+                bindingState = BindingState.BindingFailed,
+                error = WidgetError.Unknown("Failed to check widget status: ${e.message}")
+            )
+        }
     }
 
     override suspend fun allocateWidgetId(): Int {
         return appWidgetHost.allocateWidgetId()
     }
 
-    override suspend fun bindWidget(widgetId: Int, providerInfo: WidgetProviderInfo): Result<Unit> {
-        return try {
-            val componentName = ComponentName.unflattenFromString(providerInfo.componentName)
-                ?: return Result.failure(IllegalArgumentException("Invalid component name"))
+    override suspend fun bindWidget(widgetId: Int, providerInfo: WidgetProviderInfo): WidgetData {
+        val componentName = ComponentName.unflattenFromString(providerInfo.componentName)
+            ?: throw IllegalArgumentException("Invalid component name")
 
-            val canBind = appWidgetManager.bindAppWidgetIdIfAllowed(widgetId, componentName)
-            
-            if (canBind) {
-                val widgetData = WidgetData(
-                    widgetId = widgetId,
-                    providerComponentName = providerInfo.componentName,
-                    width = providerInfo.minWidth,
-                    height = providerInfo.minHeight,
-                    label = providerInfo.label
-                )
-                
-                val currentWidgets = _boundWidgets.value.toMutableList()
-                currentWidgets.add(widgetData)
-                _boundWidgets.value = currentWidgets
-                
-                Result.success(Unit)
-            } else {
-                // Need to request permission from user
-                Result.failure(SecurityException("Widget binding not allowed"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
+        val canBind = appWidgetManager.bindAppWidgetIdIfAllowed(widgetId, componentName)
+        
+        if (!canBind) {
+            throw SecurityException("Widget binding not allowed - need user permission")
         }
+        
+        return WidgetData(
+            widgetId = widgetId,
+            providerComponentName = providerInfo.componentName,
+            width = providerInfo.minWidth,
+            height = providerInfo.minHeight,
+            label = providerInfo.label
+        )
     }
 
-    override suspend fun removeWidget(widgetId: Int): Result<Unit> {
-        return try {
-            appWidgetHost.deallocateWidgetId(widgetId)
-            
-            val currentWidgets = _boundWidgets.value.toMutableList()
-            currentWidgets.removeAll { it.widgetId == widgetId }
-            _boundWidgets.value = currentWidgets
-            
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    override suspend fun unbindWidget(widgetId: Int) {
+        // Remove from AppWidgetManager
+        appWidgetHost.deallocateWidgetId(widgetId)
     }
 
     override suspend fun hasConfigurationActivity(providerInfo: WidgetProviderInfo): Boolean {
@@ -105,25 +143,21 @@ class AppWidgetRepositoryImpl @Inject constructor(
     override suspend fun startConfigurationActivity(
         widgetId: Int,
         providerInfo: WidgetProviderInfo
-    ): Result<Unit> {
-        return try {
-            val componentName = ComponentName.unflattenFromString(providerInfo.componentName)
-                ?: return Result.failure(IllegalArgumentException("Invalid component name"))
+    ) {
+        val componentName = ComponentName.unflattenFromString(providerInfo.componentName)
+            ?: throw IllegalArgumentException("Invalid component name")
 
-            val providers = appWidgetManager.installedProviders
-            val provider = providers.find { it.provider == componentName }
-                ?: return Result.failure(IllegalArgumentException("Provider not found"))
+        val providers = appWidgetManager.installedProviders
+        val provider = providers.find { it.provider == componentName }
+            ?: throw IllegalArgumentException("Provider not found")
 
-            if (provider.configure != null) {
-                // Configuration activity exists - would need to start activity for result
-                // This would typically be handled by the calling component
-                Result.success(Unit)
-            } else {
-                Result.failure(IllegalStateException("No configuration activity"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
+        if (provider.configure == null) {
+            throw IllegalStateException("No configuration activity")
         }
+        
+        // Configuration activity exists - would need to start activity for result
+        // This would typically be handled by the calling component
+        // For now, we just validate that it exists
     }
 
     override suspend fun getProviderInfo(componentName: String): WidgetProviderInfo? {
@@ -148,54 +182,27 @@ class AppWidgetRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun updateWidgetOptions(widgetId: Int, width: Int, height: Int): Result<Unit> {
-        return try {
-            val options = Bundle().apply {
-                putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, width)
-                putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, height)
-                putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, width)
-                putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, height)
-            }
-            
-            appWidgetManager.updateAppWidgetOptions(widgetId, options)
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
+    override suspend fun updateWidgetOptions(widgetId: Int, width: Int, height: Int) {
+        val options = Bundle().apply {
+            putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, width)
+            putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, height)
+            putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, width)
+            putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, height)
         }
+        
+        appWidgetManager.updateAppWidgetOptions(widgetId, options)
     }
 
-    override suspend fun createWidgetView(widgetData: WidgetData): Result<AppWidgetHostView> {
+    override suspend fun createWidgetView(widgetData: WidgetData): AppWidgetHostView {
+        val providerInfo = appWidgetManager.getAppWidgetInfo(widgetData.widgetId)
+            ?: throw IllegalStateException("Widget provider info not found")
+        
         return try {
-            updateWidgetViewState(widgetData.widgetId, WidgetViewState.Loading)
-            
-            val providerInfo = appWidgetManager.getAppWidgetInfo(widgetData.widgetId)
-            if (providerInfo == null) {
-                updateWidgetViewState(widgetData.widgetId, WidgetViewState.Error(WidgetError.ProviderNotFound))
-                return Result.failure(IllegalStateException("Widget provider info not found"))
-            }
-            
-            val hostView = appWidgetHost.createView(context, widgetData.widgetId, providerInfo)
-            updateWidgetViewState(widgetData.widgetId, WidgetViewState.Success(widgetData))
-            
-            Result.success(hostView)
+            appWidgetHost.createView(context, widgetData.widgetId, providerInfo)
         } catch (e: SecurityException) {
-            updateWidgetViewState(widgetData.widgetId, WidgetViewState.Error(WidgetError.PermissionDenied))
-            Result.failure(e)
+            throw SecurityException("Permission denied for widget creation", e)
         } catch (e: Exception) {
-            updateWidgetViewState(widgetData.widgetId, WidgetViewState.Error(WidgetError.HostCreationFailed))
-            Result.failure(e)
+            throw IllegalStateException("Failed to create widget host view", e)
         }
-    }
-
-    override fun getWidgetViewState(widgetId: Int): Flow<WidgetViewState> {
-        return _widgetViewStates.map { states ->
-            states[widgetId] ?: WidgetViewState.Loading
-        }
-    }
-    
-    private fun updateWidgetViewState(widgetId: Int, state: WidgetViewState) {
-        val currentStates = _widgetViewStates.value.toMutableMap()
-        currentStates[widgetId] = state
-        _widgetViewStates.value = currentStates
     }
 }

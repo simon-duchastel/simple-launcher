@@ -4,12 +4,13 @@ import android.appwidget.AppWidgetHost
 import android.appwidget.AppWidgetHostView
 import android.appwidget.AppWidgetProviderInfo
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class LauncherAppWidgetHost @Inject constructor(
-    private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : AppWidgetHost(context, HOST_ID) {
 
     companion object {

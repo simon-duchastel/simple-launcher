@@ -12,6 +12,7 @@ enabling users to add interactive widgets from other applications to their home 
 - **Widget Host Infrastructure** - AppWidgetHost and AppWidgetHostView management
 - **Widget Repository** - Widget operations and state management  
 - **Compose Integration** - Bridge between Android Views and Jetpack Compose
+- **Widget Selection** - User interface for choosing widgets from settings
 
 ## Architecture
 
@@ -24,6 +25,11 @@ modules/features/app-widgets/
 │   │   │   ├── AppWidgetPresenter.kt     # Business logic & state management  
 │   │   │   ├── AppWidgetState.kt         # UI state definition
 │   │   │   └── AppWidgetUi.kt            # Composable widget UI
+│   │   ├── selection/
+│   │   │   ├── WidgetSelectionScreen.kt  # Circuit screen for widget selection
+│   │   │   ├── WidgetSelectionPresenter.kt # Selection business logic
+│   │   │   ├── WidgetSelectionState.kt   # Selection UI state
+│   │   │   └── WidgetSelectionUi.kt      # Widget selection UI
 │   │   └── compose/
 │   │       └── AppWidgetHostCompose.kt   # Compose wrapper for AppWidgetHostView
 │   ├── data/
@@ -59,6 +65,12 @@ modules/features/app-widgets/
 - **Widget Binding** - Bind widgets with proper permissions
 - **Configuration** - Handle widget configuration activities
 - **Removal** - Clean widget removal and resource cleanup
+
+### Widget Selection
+- **Available Widgets** - Browse all installable widgets on device
+- **Selection Interface** - User-friendly widget picker UI
+- **Settings Integration** - Seamless connection to launcher settings
+- **Preview Support** - Display widget previews and information
 
 ## Data Models
 
@@ -96,6 +108,12 @@ data class WidgetProviderInfo(
 ```kotlin
 // Navigate to widget display
 navigator.goTo(AppWidgetScreen(widgetData))
+```
+
+### Widget Selection Screen
+```kotlin
+// Navigate to widget selection from settings
+navigator.goTo(WidgetSelectionScreen)
 ```
 
 ### Use Widget Repository
