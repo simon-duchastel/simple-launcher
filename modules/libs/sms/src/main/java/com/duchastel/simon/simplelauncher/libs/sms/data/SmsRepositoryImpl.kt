@@ -8,6 +8,7 @@ import android.telephony.SmsManager
 import com.duchastel.simon.simplelauncher.libs.permissions.data.Permission
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -24,17 +25,20 @@ class SmsRepositoryImpl @Inject internal constructor(
     private val packageManager = context.packageManager
 
     @OptIn(ExperimentalTime::class)
-    override suspend fun sendSms(phoneNumber: String, message: String): Boolean {
+    override suspend fun sendSms(
+        phoneNumber: String,
+        message: String,
+    ): SendSmsResult = coroutineScope {
         val result: Boolean = permissionRepository.requestPermission(Permission.SEND_SMS)
         if (!result) {
-            return false
+            return@coroutineScope BasicFailure
         }
 
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
-            return false
+            return@coroutineScope BasicFailure
         }
 
-        return suspendCancellableCoroutine { cont ->
+        return@coroutineScope suspendCancellableCoroutine<SendSmsResult> { cont ->
             val sentAction =
                 "SMS_SENT_ACTION_${Clock.System.now().epochSeconds}_${phoneNumber.hashCode()}"
             val requestCode = sentAction.hashCode()
@@ -45,13 +49,30 @@ class SmsRepositoryImpl @Inject internal constructor(
                 requestCode,
             )
 
+            val wasDeliveredSuccessfully = createAsyncOutcome<Outcome<Boolean, Unit>> {
+                suspendCancellableCoroutine { deliverCont ->
+                    smsBroadcastReceiverFactory.createDeliveredSmsBroadcastReceiver(
+                        messageId = messageId,
+                        onDeliveredSmsReceived = { successfullyDelivered, broadcastReceiver ->
+                            context.unregisterReceiver(broadcastReceiver)
+                            deliverCont.resume(successfullyDelivered.asSuccess())
+                        }
+                    )
+                }
+            }
             val receiver = smsBroadcastReceiverFactory.createSentSmsBroadcastReceiver(
                 messageId = messageId,
                 onSentSmsReceived = { successfullySent, broadcastReceiver ->
                     context.unregisterReceiver(broadcastReceiver)
-                    cont.resume(successfullySent)
+                    cont.resume(wasDeliveredSuccessfully.asSuccess())
                 }
             )
+            cont.invokeOnCancellation {
+                runCatching {
+                    // swallow the exception since it means the receiver wasn't registered anyways
+                    context.unregisterReceiver(receiver)
+                }
+            }
             val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 Context.RECEIVER_EXPORTED
             } else {
@@ -62,6 +83,7 @@ class SmsRepositoryImpl @Inject internal constructor(
                 IntentFilter(sentAction),
                 flags,
             )
+
             smsManager.sendTextMessage(
                 phoneNumber, // destinationAddress
                 null,        // scAddress
@@ -69,12 +91,6 @@ class SmsRepositoryImpl @Inject internal constructor(
                 sentIntent,  // sentIntent
                 null         // deliveryIntent
             )
-            cont.invokeOnCancellation {
-                runCatching {
-                    // swallow the exception since it means the receiver wasn't registered anyways
-                    context.unregisterReceiver(receiver)
-                }
-            }
         }
     }
 }
