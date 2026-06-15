@@ -18,7 +18,6 @@ import android.net.Uri
 import android.provider.Settings
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.verify
 
@@ -59,12 +58,50 @@ class AppRepositoryImplTest {
         }
         resolveInfo2.activityInfo = activityInfo2
 
-        whenever(packageManager.queryIntentActivities(any(), eq(0))).thenReturn(listOf(resolveInfo1, resolveInfo2))
+        whenever(packageManager.queryIntentActivities(any(), eq(0))).thenReturn(
+            listOf(resolveInfo1, resolveInfo2), // first call: CATEGORY_LAUNCHER
+            emptyList(),                        // second call: CATEGORY_HOME (no launchers)
+        )
 
         val result = appRepository.getInstalledApps()
         assertEquals(2, result.size)
         assertEquals("A App", result[0].label)
         assertEquals("B App", result[1].label)
+    }
+
+    @Test
+    fun `getInstalledApps filters out all launchers including self`() {
+        val regularAppIcon = mock<Drawable>()
+        val selfIcon = mock<Drawable>()
+        val otherLauncherIcon = mock<Drawable>()
+
+        val regularAppInfo = ActivityInfo().apply { packageName = "com.example.regular" }
+        val selfInfo = ActivityInfo().apply { packageName = "com.duchastel.simon.simplelauncher" }
+        val otherLauncherInfo = ActivityInfo().apply { packageName = "com.other.launcher" }
+
+        val regularResolveInfo = object : ResolveInfo() {
+            override fun loadLabel(pm: PackageManager): CharSequence = "Regular App"
+            override fun loadIcon(pm: PackageManager): Drawable = regularAppIcon
+        }.apply { activityInfo = regularAppInfo }
+
+        val selfResolveInfo = object : ResolveInfo() {
+            override fun loadLabel(pm: PackageManager): CharSequence = "SimpleLauncher"
+            override fun loadIcon(pm: PackageManager): Drawable = selfIcon
+        }.apply { activityInfo = selfInfo }
+
+        val otherLauncherResolveInfo = object : ResolveInfo() {
+            override fun loadLabel(pm: PackageManager): CharSequence = "Other Launcher"
+            override fun loadIcon(pm: PackageManager): Drawable = otherLauncherIcon
+        }.apply { activityInfo = otherLauncherInfo }
+
+        whenever(packageManager.queryIntentActivities(any(), eq(0))).thenReturn(
+            listOf(regularResolveInfo, selfResolveInfo, otherLauncherResolveInfo), // first call: CATEGORY_LAUNCHER
+            listOf(selfResolveInfo, otherLauncherResolveInfo),                     // second call: CATEGORY_HOME
+        )
+
+        val result = appRepository.getInstalledApps()
+        assertEquals(1, result.size)
+        assertEquals("Regular App", result[0].label)
     }
 
     @Test
