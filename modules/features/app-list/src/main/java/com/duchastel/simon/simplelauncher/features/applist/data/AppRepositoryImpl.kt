@@ -17,18 +17,27 @@ class AppRepositoryImpl @Inject internal constructor(
     private val packageManager: PackageManager = context.packageManager
 
     override fun getInstalledApps(): List<App> {
-        val intent = Intent(Intent.ACTION_MAIN).apply {
+        val launcherIntent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
 
-        val activities = packageManager.queryIntentActivities(intent, 0)
-        return activities.map { resolveInfo ->
-            App(
-                label = resolveInfo.loadLabel(packageManager).toString(),
-                packageName = resolveInfo.activityInfo.packageName,
-                icon = resolveInfo.loadIcon(packageManager)
-            )
-        }.sortedBy { it.label }
+        val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+
+        val launcherApps = packageManager.queryIntentActivities(launcherIntent, 0)
+        val homeApps = packageManager.queryIntentActivities(homeIntent, 0)
+        val homePackageNames = homeApps.map { it.activityInfo.packageName }.toSet()
+
+        return launcherApps
+            .filter { it.activityInfo.packageName !in homePackageNames }
+            .map { resolveInfo ->
+                App(
+                    label = resolveInfo.loadLabel(packageManager).toString(),
+                    packageName = resolveInfo.activityInfo.packageName,
+                    icon = resolveInfo.loadIcon(packageManager)
+                )
+            }.sortedBy { it.label }
     }
 
     override fun launchApp(app: App): Boolean {
