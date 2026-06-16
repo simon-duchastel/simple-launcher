@@ -1,7 +1,9 @@
 package com.duchastel.simon.simplelauncher.libs.ui.components
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -76,12 +78,12 @@ fun VerticalSlidingDrawer(
         val interactionSource = remember { MutableInteractionSource() }
         val coroutineScope = rememberCoroutineScope()
 
+        // Thresholds copied from Material3 StandardBottomSheet
+        val positionalThreshold = with(density) { 56.dp.toPx() }
+        val velocityThreshold = with(density) { 125.dp.toPx() }
+
         // Nested scroll connection on the sheet surface.
-        // Copies Material3 ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection pattern:
-        // - onPreScroll: intercept upward scroll (pulling down at top of list) and move sheet
-        // - onPostScroll: intercept downward overscroll and move sheet
-        // - onPreFling: consume downward fling when sheet is not at min anchor
-        // - onPostFling: settle sheet with remaining velocity
+        // Matches Material3 ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection.
         val nestedScrollConnection = remember {
             object : NestedScrollConnection {
                 override fun onPreScroll(
@@ -117,7 +119,6 @@ fun VerticalSlidingDrawer(
                     val currentOffset = state.offset
                     val minAnchor = state.anchors.minPosition()
                     return if (toFling < 0f && currentOffset > minAnchor) {
-                        // Consuming all — settle animation handles the actual movement
                         available
                     } else {
                         Velocity.Zero
@@ -161,95 +162,97 @@ fun VerticalSlidingDrawer(
                 content()
             }
 
-            // Full-screen transparent overlay that captures swipe-up ONLY when the
-            // drawer is fully hidden. Uses custom pointerInput that always consumes
-            // events during the drag, preventing children from starting a competing
-            // gesture. This is the "swipe up from anywhere on the wallpaper" behavior.
-            if (state.offset >= maxHeightPx - 1f) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .pointerInput(state) {
-                            awaitEachGesture {
-                                val down = awaitFirstDown(requireUnconsumed = false)
-                                val slop = viewConfiguration.touchSlop
-                                var totalDelta = 0f
+            // Full-screen transparent overlay that captures swipe-up when the drawer
+            // is fully hidden. The overlay is ALWAYS composed so its pointerInput
+            // coroutine survives across recomposition. Inside the coroutine we check
+            // state.offset and early-return when the drawer is already open.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(state) {
+                        awaitEachGesture {
+                            // Early return if drawer is not fully hidden
+                            if (state.offset < maxHeightPx - 1f) return@awaitEachGesture
 
-                                // Slop detection — only upward motion opens drawer
-                                var slopExceeded = false
-                                while (true) {
-                                    val event = awaitPointerEvent()
-                                    val change = event.changes.find { it.id == down.id }
-                                        ?: break
-                                    if (change.changedToUpIgnoreConsumed()) break
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            val slop = viewConfiguration.touchSlop
+                            val startOffset = state.offset
+                            var totalDelta = 0f
 
-                                    totalDelta += change.positionChange().y
-                                    if (totalDelta < -slop) {
-                                        change.consume()
-                                        slopExceeded = true
-                                        break
-                                    }
-                                }
+                            // Slop detection — only upward motion opens drawer
+                            var slopExceeded = false
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                val change = event.changes.find { it.id == down.id }
+                                    ?: break
+                                if (change.changedToUpIgnoreConsumed()) break
 
-                                if (!slopExceeded) return@awaitEachGesture
-
-                                // Drag phase — consume ALL events so LazyColumn can't start
-                                val velocityTracker = VelocityTracker()
-                                while (true) {
-                                    val event = awaitPointerEvent()
-                                    val change = event.changes.find { it.id == down.id }
-                                        ?: break
-                                    if (change.changedToUpIgnoreConsumed()) break
-
-                                    val delta = change.positionChange().y
+                                totalDelta += change.positionChange().y
+                                if (totalDelta < -slop) {
                                     change.consume()
-                                    velocityTracker.addPosition(
-                                        change.uptimeMillis,
-                                        change.position
-                                    )
-                                    state.dispatchRawDelta(delta)
+                                    slopExceeded = true
+                                    break
                                 }
+                            }
 
-                                // Settle with velocity-aware snap
-                                val velocity = velocityTracker.calculateVelocity().y
-                                val currentOffset = state.offset
-                                val hiddenOffset = state.anchors.positionOf(DragAnchors.Hidden)
-                                val expandedOffset = state.anchors.positionOf(DragAnchors.Expanded)
+                            if (!slopExceeded) return@awaitEachGesture
 
-                                val target = when {
-                                    velocity > 1000f -> DragAnchors.Hidden
-                                    velocity < -1000f -> DragAnchors.Expanded
-                                    currentOffset > (hiddenOffset + expandedOffset) / 2 ->
-                                        DragAnchors.Hidden
-                                    else -> DragAnchors.Expanded
-                                }
+                            // Drag phase — consume ALL events so LazyColumn can't start
+                            val velocityTracker = VelocityTracker()
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                val change = event.changes.find { it.id == down.id }
+                                    ?: break
+                                if (change.changedToUpIgnoreConsumed()) break
 
-                                coroutineScope.launch {
-                                    val anim = Animatable(
-                                        currentOffset,
-                                        Float.VectorConverter
-                                    )
-                                    anim.animateTo(
-                                        targetValue = state.anchors.positionOf(target),
-                                        initialVelocity = velocity,
-                                    ) {
-                                        state.dispatchRawDelta(value - state.offset)
-                                    }
+                                val delta = change.positionChange().y
+                                change.consume()
+                                velocityTracker.addPosition(
+                                    change.uptimeMillis,
+                                    change.position
+                                )
+                                state.dispatchRawDelta(delta)
+                            }
+
+                            // Settle — match Material3 positional/velocity thresholds.
+                            // A short swipe up (more than 56dp) opens the drawer.
+                            // A tiny swipe snaps back. A fast fling overrides position.
+                            val velocity = velocityTracker.calculateVelocity().y
+                            val currentOffset = state.offset
+                            val dragDistance = startOffset - currentOffset
+
+                            val target = when {
+                                velocity > velocityThreshold -> DragAnchors.Hidden
+                                velocity < -velocityThreshold -> DragAnchors.Expanded
+                                dragDistance > positionalThreshold -> DragAnchors.Expanded
+                                else -> DragAnchors.Hidden
+                            }
+
+                            coroutineScope.launch {
+                                val anim = Animatable(
+                                    currentOffset,
+                                    Float.VectorConverter
+                                )
+                                anim.animateTo(
+                                    targetValue = state.anchors.positionOf(target),
+                                    animationSpec = tween(
+                                        durationMillis = 300,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    initialVelocity = velocity,
+                                ) {
+                                    state.dispatchRawDelta(value - state.offset)
                                 }
                             }
                         }
-                )
-            }
+                    }
+            )
 
-            // Sheet surface — anchoredDraggable on the full Surface (not just handle).
+            // Sheet surface — anchoredDraggable on the full Surface.
             // This matches Material3 StandardBottomSheet architecture:
-            // - anchoredDraggable on the Surface handles drag-down-to-close
-            // - LazyColumn inside coordinates via nestedScroll (list scrolls normally,
+            // - The full Surface is draggable for explicit close
+            // - LazyColumn inside coordinates via nestedScroll (scrolls normally,
             //   overscroll at top propagates to close the sheet)
-            // At PointerEventPass.Main, child (LazyColumn.scrollable) goes BEFORE parent
-            // (Surface.anchoredDraggable), so the list wins the slop race when scrolling.
-            // When pulling down at the top of the list, overscroll goes through nestedScroll
-            // and moves the sheet. The drag handle area (above the list) is also draggable.
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
