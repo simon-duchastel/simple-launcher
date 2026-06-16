@@ -74,11 +74,26 @@ Standardized button component used in settings screens:
 - Theme-aware color adaptation
 
 ### VerticalSlidingDrawer
-Material Design 3-styled sliding drawer used for the app launcher:
-- Drag handle using `BottomSheetDefaults.DragHandle()`
-- Expandable with configurable top padding
-- Supports nested scroll and fling gestures
-- Swipe up on content to reveal, swipe down to hide
+Material Design 3-styled sliding drawer used for the app launcher.
+
+**Gesture model:**
+- **Swipe up from anywhere on the home screen** to reveal the drawer. A full-screen
+  transparent overlay uses a custom `pointerInput` gesture that always consumes pointer
+  events during the drag. This prevents the inner `LazyColumn` from starting a competing
+  gesture when your finger strays onto the drawer content mid-gesture.
+- **Direct finger tracking** — during the drag, `state.dispatchRawDelta()` is called
+  directly so the sheet follows your finger pixel-for-pixel.
+- **Velocity settle** — on release, a `VelocityTracker` computes fling velocity and
+  animates to Hidden or Expanded.
+- **Open-state drag/scroll coordination** — the sheet Surface uses `anchoredDraggable`
+  on its full area plus `nestedScroll`. At `PointerEventPass.Main`, the inner
+  `LazyColumn.scrollable` wins the slop race when scrolling the list. When pulling down
+  at the top of the list, overscroll propagates through `nestedScroll` and closes the
+  drawer. The drag handle area is also directly draggable.
+- **Material3 drag handle** — `BottomSheetDefaults.DragHandle()` centered at the top of
+  the sheet. `BottomSheetDefaults.ExpandedShape` for the sheet shape.
+- **64dp `expandedTopPadding`** — the drawer stops short of the top, leaving a strip of
+  wallpaper visible.
 
 ### Future Components
 Planned shared components:
