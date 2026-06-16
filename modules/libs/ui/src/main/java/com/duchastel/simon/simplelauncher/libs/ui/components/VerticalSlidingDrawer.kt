@@ -10,18 +10,22 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
@@ -36,16 +40,18 @@ enum class DragAnchors {
 @Composable
 fun VerticalSlidingDrawer(
     modifier: Modifier = Modifier,
+    expandedTopPadding: Dp = 64.dp,
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val scope: BoxWithConstraintsScope = this // necessary for lint
+        val expandedOffsetPx = with(LocalDensity.current) { expandedTopPadding.toPx() }
         val anchors = DraggableAnchors {
             DragAnchors.Hidden at scope.constraints.maxHeight.toFloat()
-            DragAnchors.Expanded at 0f
+            DragAnchors.Expanded at expandedOffsetPx
         }
-        val state: AnchoredDraggableState<DragAnchors> = remember {
+        val state: AnchoredDraggableState<DragAnchors> = remember(expandedTopPadding) {
             AnchoredDraggableState<DragAnchors>(
                 initialValue = DragAnchors.Hidden,
                 anchors = anchors,
@@ -61,7 +67,7 @@ fun VerticalSlidingDrawer(
                     source: NestedScrollSource
                 ): Offset {
                     val additionalConsumedY = state.dispatchRawDelta(available.y)
-                    val remainingAvailableY =  available.y - additionalConsumedY
+                    val remainingAvailableY = available.y - additionalConsumedY
                     return Offset(x = available.x, y = remainingAvailableY)
                 }
 
@@ -107,9 +113,16 @@ fun VerticalSlidingDrawer(
                 modifier = Modifier
                     .fillMaxSize()
                     .offset { IntOffset(0, state.offset.roundToInt()) },
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                shape = BottomSheetDefaults.ExpandedShape,
             ) {
-                drawerContent()
+                Column(modifier = Modifier.fillMaxSize()) {
+                    BottomSheetDefaults.DragHandle(
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    Box(modifier = Modifier.weight(1f)) {
+                        drawerContent()
+                    }
+                }
             }
         }
     }
