@@ -38,9 +38,4 @@ dependencies {
     implementation(libs.androidx.compose.uitooling)
 
     debugImplementation(libs.androidx.compose.uitooling)
-
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.compose.test.junit4)
 }
