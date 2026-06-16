@@ -12,12 +12,13 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +65,10 @@ fun VerticalSlidingDrawer(
         }
         val flingBehavior = AnchoredDraggableDefaults.flingBehavior(state)
         val interactionSource = remember { MutableInteractionSource() }
-        val dragHandleInteractionSource = remember { MutableInteractionSource() }
+        val drawerInteractionSource = remember { MutableInteractionSource() }
+        val isExpanded by remember {
+            derivedStateOf { state.currentValue == DragAnchors.Expanded }
+        }
         val nestedScrollConnection = remember(thresholdPx) {
             object : NestedScrollConnection {
                 override fun onPostScroll(
@@ -90,7 +94,7 @@ fun VerticalSlidingDrawer(
                     // Don't propagate fling if child consumed any velocity,
                     // or if available is below threshold
                     if (consumed.y != 0f || abs(available.y) < thresholdPx * 10) {
-                        return Velocity(x = 0f, y = available.y)
+                        return Velocity.Zero
                     }
                     var remainingAvailableVelocityY = available.y
                     state.anchoredDrag {
@@ -111,42 +115,38 @@ fun VerticalSlidingDrawer(
         }
 
         Box(
-            modifier = modifier.nestedScroll(nestedScrollConnection)
+            modifier = modifier
+                .nestedScroll(nestedScrollConnection)
+                .anchoredDraggable(
+                    state = state,
+                    orientation = Orientation.Vertical,
+                    enabled = !isExpanded,
+                    flingBehavior = flingBehavior,
+                    reverseDirection = false,
+                    interactionSource = interactionSource,
+                )
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .anchoredDraggable(
-                        state = state,
-                        orientation = Orientation.Vertical,
-                        flingBehavior = flingBehavior,
-                        reverseDirection = false,
-                        interactionSource = interactionSource,
-                    )
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 content()
             }
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
-                    .offset { IntOffset(0, state.offset.roundToInt()) },
+                    .offset { IntOffset(0, state.offset.roundToInt()) }
+                    .anchoredDraggable(
+                        state = state,
+                        orientation = Orientation.Vertical,
+                        enabled = isExpanded,
+                        flingBehavior = flingBehavior,
+                        reverseDirection = false,
+                        interactionSource = drawerInteractionSource,
+                    ),
                 shape = BottomSheetDefaults.ExpandedShape,
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .anchoredDraggable(
-                                state = state,
-                                orientation = Orientation.Vertical,
-                                flingBehavior = flingBehavior,
-                                reverseDirection = false,
-                                interactionSource = dragHandleInteractionSource,
-                            ),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        BottomSheetDefaults.DragHandle()
-                    }
+                    BottomSheetDefaults.DragHandle(
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
                     Box(modifier = Modifier.weight(1f)) {
                         drawerContent()
                     }
