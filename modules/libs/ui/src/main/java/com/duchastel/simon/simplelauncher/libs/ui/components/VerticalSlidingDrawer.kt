@@ -78,7 +78,7 @@ fun VerticalSlidingDrawer(
         val interactionSource = remember { MutableInteractionSource() }
         val coroutineScope = rememberCoroutineScope()
 
-        // Thresholds copied from Material3 StandardBottomSheet
+        // Thresholds copied from Material3 StandardBottomSheet.
         val positionalThreshold = with(density) { 56.dp.toPx() }
         val velocityThreshold = with(density) { 125.dp.toPx() }
 
@@ -147,13 +147,10 @@ fun VerticalSlidingDrawer(
             }
         }
 
-        // BUG FIX #2: explicit sheet height.
-        // The sheet occupies the screen from expandedOffsetPx down to the bottom.
-        // Using fillMaxSize() would make the Surface layout bounds extend the full
-        // screen height, but visually offset by expandedOffsetPx. This caused the
-        // LazyColumn inside to think it had full-screen height, laying out items
-        // that were hidden below the bottom edge. Using explicit height ensures
-        // the inner LazyColumn knows its true viewport bounds.
+        // Explicit sheet height: screen height minus top padding. Using fillMaxSize()
+        // would make layout bounds extend the full screen height but visually offset,
+        // causing the inner LazyColumn to lay out items in the clipped-off area below
+        // the bottom edge. Using explicit height gives the LazyColumn correct bounds.
         val sheetHeight = with(density) { (maxHeightPx - expandedOffsetPx).toDp() }
 
         Box(modifier = modifier.fillMaxSize()) {
@@ -163,18 +160,19 @@ fun VerticalSlidingDrawer(
             }
 
             // Full-screen transparent overlay that captures swipe-up when the drawer
-            // is fully hidden. The overlay is ALWAYS composed so its pointerInput
-            // coroutine survives across recomposition. Inside the coroutine we check
-            // state.offset and early-return when the drawer is already open.
+            // is fully hidden. The overlay is always composed so its pointerInput
+            // coroutine survives recomposition. awaitFirstDown suspends the coroutine
+            // until a touch event; we only return early after suspending, preventing
+            // the awaitEachGesture loop from spinning.
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .pointerInput(state) {
                         awaitEachGesture {
-                            // Early return if drawer is not fully hidden
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            // Check AFTER suspending — prevents infinite loop
                             if (state.offset < maxHeightPx - 1f) return@awaitEachGesture
 
-                            val down = awaitFirstDown(requireUnconsumed = false)
                             val slop = viewConfiguration.touchSlop
                             val startOffset = state.offset
                             var totalDelta = 0f
@@ -197,7 +195,7 @@ fun VerticalSlidingDrawer(
 
                             if (!slopExceeded) return@awaitEachGesture
 
-                            // Drag phase — consume ALL events so LazyColumn can't start
+                            // Drag phase — consume ALL events so LazyColumn cannot start
                             val velocityTracker = VelocityTracker()
                             while (true) {
                                 val event = awaitPointerEvent()
@@ -214,9 +212,7 @@ fun VerticalSlidingDrawer(
                                 state.dispatchRawDelta(delta)
                             }
 
-                            // Settle — match Material3 positional/velocity thresholds.
-                            // A short swipe up (more than 56dp) opens the drawer.
-                            // A tiny swipe snaps back. A fast fling overrides position.
+                            // Settle — Material3 positional and velocity thresholds.
                             val velocity = velocityTracker.calculateVelocity().y
                             val currentOffset = state.offset
                             val dragDistance = startOffset - currentOffset
@@ -229,19 +225,21 @@ fun VerticalSlidingDrawer(
                             }
 
                             coroutineScope.launch {
-                                val anim = Animatable(
-                                    currentOffset,
-                                    Float.VectorConverter
-                                )
-                                anim.animateTo(
-                                    targetValue = state.anchors.positionOf(target),
-                                    animationSpec = tween(
-                                        durationMillis = 300,
-                                        easing = FastOutSlowInEasing
-                                    ),
-                                    initialVelocity = velocity,
-                                ) {
-                                    state.dispatchRawDelta(value - state.offset)
+                                state.anchoredDrag {
+                                    val anim = Animatable(
+                                        currentOffset,
+                                        Float.VectorConverter
+                                    )
+                                    anim.animateTo(
+                                        targetValue = state.anchors.positionOf(target),
+                                        animationSpec = tween(
+                                            durationMillis = 300,
+                                            easing = FastOutSlowInEasing
+                                        ),
+                                        initialVelocity = velocity,
+                                    ) {
+                                        dragTo(value)
+                                    }
                                 }
                             }
                         }
@@ -249,10 +247,8 @@ fun VerticalSlidingDrawer(
             )
 
             // Sheet surface — anchoredDraggable on the full Surface.
-            // This matches Material3 StandardBottomSheet architecture:
-            // - The full Surface is draggable for explicit close
-            // - LazyColumn inside coordinates via nestedScroll (scrolls normally,
-            //   overscroll at top propagates to close the sheet)
+            // The inner LazyColumn coordinates via nestedScroll: scrolls normally,
+            // pulling down at the top of the list propagates to close the drawer.
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
