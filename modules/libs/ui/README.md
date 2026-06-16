@@ -23,7 +23,8 @@ modules/libs/ui/
 │   │   ├── Theme.kt                   # App theme configuration
 │   │   └── Type.kt                    # Typography system
 │   └── components/
-│       └── SettingsButton.kt          # Shared UI components
+│       ├── SettingsButton.kt          # Shared UI components
+│       └── VerticalSlidingDrawer.kt   # Bottom sheet drawer with drag handle
 └── build.gradle.kts                   # UI dependencies
 ```
 
@@ -71,6 +72,20 @@ Standardized button component used in settings screens:
 - Consistent styling and behavior
 - Built-in accessibility features
 - Theme-aware color adaptation
+
+### VerticalSlidingDrawer
+Material3-styled sliding app drawer.
+
+Swipe up from anywhere on the home screen to open, swipe down from the sheet to close.
+A full-screen pointerInput overlay captures the swipe and always consumes events during
+a drag, preventing the inner LazyColumn from stealing the gesture mid-drag. The sheet
+tracks the finger directly via dispatchRawDelta(). On release the sheet settles using
+Material3 thresholds (56dp positional, 125dp/s velocity). When the drawer is open the
+inner LazyColumn scrolls normally and pulling down at the top of the list closes the
+drawer via nestedScroll coordination.
+
+Uses BottomSheetDefaults.DragHandle(), BottomSheetDefaults.ExpandedShape, and a 64dp
+top padding so the drawer stops short of the screen edge.
 
 ### Future Components
 Planned shared components:
