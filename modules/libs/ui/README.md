@@ -23,7 +23,8 @@ modules/libs/ui/
 │   │   ├── Theme.kt                   # App theme configuration
 │   │   └── Type.kt                    # Typography system
 │   └── components/
-│       └── SettingsButton.kt          # Shared UI components
+│       ├── SettingsButton.kt          # Shared UI components
+│       └── VerticalSlidingDrawer.kt   # Bottom sheet drawer with drag handle
 └── build.gradle.kts                   # UI dependencies
 ```
 
@@ -71,6 +72,16 @@ Standardized button component used in settings screens:
 - Consistent styling and behavior
 - Built-in accessibility features
 - Theme-aware color adaptation
+
+### VerticalSlidingDrawer
+Material Design 3-styled sliding drawer used for the app launcher:
+- Drag handle using `BottomSheetDefaults.DragHandle()`
+- Expandable with configurable top padding
+- Drag handle is independently draggable to open/close the drawer
+- Scrollable drawer content consumes scroll events completely; the drawer
+  only closes from scroll overscroll when there is no meaningful scrollable
+  content remaining (configurable via `scrollPropagationThreshold`)
+- Supports nested scroll and fling gestures
 
 ### Future Components
 Planned shared components:
