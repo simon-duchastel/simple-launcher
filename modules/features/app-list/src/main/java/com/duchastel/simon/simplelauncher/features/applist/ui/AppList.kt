@@ -6,6 +6,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,38 +23,36 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun AppList(state: AppListState, modifier: Modifier) {
-    LazyColumn(modifier = modifier) {
-        item {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                SettingsButton(
-                    onClick = { state.onSettingsClicked() },
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(state.apps) { app ->
+                Row(
                     modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(32.dp)
-                )
-            }
-        }
-        items(state.apps) { app ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .combinedClickable(
-                        onClick = { app.onClicked() },
-                        onLongClick = { app.onLongClicked() }
-                    )
-                    .padding(16.dp)
-            ) {
-                Image(
-                    painter = rememberDrawablePainter(app.icon),
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp)
-                )
-                Column(
-                    modifier = Modifier.padding(start = 16.dp)
+                        .fillMaxWidth()
+                        .combinedClickable(
+                            onClick = { app.onClicked() },
+                            onLongClick = { app.onLongClicked() }
+                        )
+                        .padding(16.dp)
                 ) {
-                    Text(text = app.label)
+                    Image(
+                        painter = rememberDrawablePainter(app.icon),
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Column(
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
+                        Text(text = app.label)
+                    }
                 }
             }
         }
+        SettingsButton(
+            onClick = { state.onSettingsClicked() },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        )
     }
 }
