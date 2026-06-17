@@ -52,7 +52,7 @@ internal fun AppList(state: AppListState, modifier: Modifier) {
             onClick = { state.onSettingsClicked() },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(32.dp)
         )
     }
 }
