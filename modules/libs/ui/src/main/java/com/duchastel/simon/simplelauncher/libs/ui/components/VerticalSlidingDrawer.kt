@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
@@ -55,13 +56,15 @@ enum class DragAnchors {
 @Composable
 fun VerticalSlidingDrawer(
     modifier: Modifier = Modifier,
-    expandedTopPadding: Dp = 64.dp,
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val scope: BoxWithConstraintsScope = this
         val density = LocalDensity.current
+        val maxWidthDp = with(density) { scope.constraints.maxWidth.toDp() }
+        val isLargeScreen = maxWidthDp > BottomSheetDefaults.SheetMaxWidth
+        val expandedTopPadding = if (isLargeScreen) 56.dp else 72.dp
         val expandedOffsetPx = with(density) { expandedTopPadding.toPx() }
         val maxHeightPx = scope.constraints.maxHeight.toFloat()
         val anchors = DraggableAnchors {
@@ -227,27 +230,32 @@ fun VerticalSlidingDrawer(
                     }
             )
 
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(sheetHeight)
-                    .offset { IntOffset(0, state.offset.roundToInt()) }
-                    .anchoredDraggable(
-                        state = state,
-                        orientation = Orientation.Vertical,
-                        flingBehavior = flingBehavior,
-                        reverseDirection = false,
-                        interactionSource = interactionSource,
-                    )
-                    .nestedScroll(nestedScrollConnection),
-                shape = BottomSheetDefaults.ExpandedShape,
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.TopCenter,
             ) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    BottomSheetDefaults.DragHandle(
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                    Box(modifier = Modifier.weight(1f)) {
-                        drawerContent()
+                Surface(
+                    modifier = Modifier
+                        .then(if (isLargeScreen) Modifier.width(BottomSheetDefaults.SheetMaxWidth) else Modifier.fillMaxWidth())
+                        .height(sheetHeight)
+                        .offset { IntOffset(0, state.offset.roundToInt()) }
+                        .anchoredDraggable(
+                            state = state,
+                            orientation = Orientation.Vertical,
+                            flingBehavior = flingBehavior,
+                            reverseDirection = false,
+                            interactionSource = interactionSource,
+                        )
+                        .nestedScroll(nestedScrollConnection),
+                    shape = BottomSheetDefaults.ExpandedShape,
+                ) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        BottomSheetDefaults.DragHandle(
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                        Box(modifier = Modifier.weight(1f)) {
+                            drawerContent()
+                        }
                     }
                 }
             }
