@@ -84,8 +84,10 @@ Material3 thresholds (56dp positional, 125dp/s velocity). When the drawer is ope
 inner LazyColumn scrolls normally and pulling down at the top of the list closes the
 drawer via nestedScroll coordination.
 
-Uses BottomSheetDefaults.DragHandle(), BottomSheetDefaults.ExpandedShape, and a 64dp
-top padding so the drawer stops short of the screen edge.
+Follows the Material 3 bottom sheet spec: drag handle is centered with 22dp vertical
+padding (provided by BottomSheetDefaults.DragHandle()). On screens up to 640dp wide
+the sheet spans the full width with a 72dp top margin. On larger screens the sheet is
+constrained to a max width of 640dp, centered horizontally, with a 56dp top margin.
 
 ### Future Components
 Planned shared components:
