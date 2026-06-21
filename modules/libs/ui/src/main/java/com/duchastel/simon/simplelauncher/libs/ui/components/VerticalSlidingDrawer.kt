@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -227,11 +228,15 @@ fun VerticalSlidingDrawer(
                     }
             )
 
+            val progress = (maxHeightPx - state.offset) / (maxHeightPx - expandedOffsetPx)
+            val drawerAlpha = progress.coerceIn(0f, 1f)
+
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(sheetHeight)
                     .offset { IntOffset(0, state.offset.roundToInt()) }
+                    .alpha(drawerAlpha)
                     .anchoredDraggable(
                         state = state,
                         orientation = Orientation.Vertical,
