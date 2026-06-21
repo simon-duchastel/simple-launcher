@@ -17,7 +17,7 @@ mockitoKotlin = "5.2.1"
 coroutines = "1.8.0"
 robolectric = "4.13"
 uiToolingPreviewAndroid = "1.8.3"
-datastorePreferences = "1.2.0-alpha02"
+datastorePreferences = "1.2.1"
 lifecycleViewmodelKtx = "2.8.0-alpha02"
 
 [libraries]
