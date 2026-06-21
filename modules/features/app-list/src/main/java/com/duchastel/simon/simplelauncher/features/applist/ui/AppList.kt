@@ -12,30 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.duchastel.simon.simplelauncher.libs.ui.components.SettingsButton
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun AppList(state: AppListState, modifier: Modifier) {
-    var settingsVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        settingsVisible = true
-    }
-
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(state.apps) { app ->
@@ -60,17 +46,6 @@ internal fun AppList(state: AppListState, modifier: Modifier) {
                     }
                 }
             }
-        }
-        AnimatedVisibility(
-            visible = settingsVisible,
-            enter = fadeIn(animationSpec = tween(durationMillis = 1200)),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(32.dp)
-        ) {
-            SettingsButton(
-                onClick = { state.onSettingsClicked() },
-            )
         }
     }
 }

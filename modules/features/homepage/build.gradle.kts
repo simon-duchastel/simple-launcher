@@ -32,7 +32,9 @@ android {
 
 dependencies {
     implementation(project(":modules:libs:ui"))
+    implementation(project(":modules:libs:intents"))
     implementation(project(":modules:features:homepage-action"))
+    implementation(project(":modules:features:app-list"))
     implementation(project(":modules:features:settings"))
 
     implementation(platform(libs.androidx.compose.bom))

@@ -1,26 +1,39 @@
 package com.duchastel.simon.simplelauncher.features.homepage.ui
 
+import android.content.Context
 import android.os.Parcelable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
+import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
 import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionButton
+import com.duchastel.simon.simplelauncher.features.settings.SettingsActivity
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
+import com.duchastel.simon.simplelauncher.intents.IntentLauncher
+import com.duchastel.simon.simplelauncher.libs.ui.components.SettingsButton
+import com.duchastel.simon.simplelauncher.libs.ui.components.VerticalSlidingDrawer
 import com.slack.circuit.foundation.CircuitContent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.screen.Screen
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
@@ -31,6 +44,7 @@ data object HomepageScreen : Screen, Parcelable
 data class HomepageState(
     val text: String,
     val homepageAction: HomepageAction?,
+    val onSettingsClicked: () -> Unit,
 ) : CircuitUiState {
     data class HomepageAction(
         val emoji: String,
@@ -39,32 +53,59 @@ data class HomepageState(
 }
 
 @Composable
-internal fun Homepage(state: HomepageState) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = state.text,
-            modifier = Modifier.align(Alignment.Center),
-        )
-        if (state.homepageAction != null) {
-            CircuitContent(
-                HomepageActionButton(
-                    smsDestination = state.homepageAction.smsDestination,
-                    emoji = state.homepageAction.emoji,
-                ),
-                modifier = Modifier
-                    .padding(
-                        horizontal = 60.dp,
-                        vertical = 100.dp,
+internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
+    var settingsVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        settingsVisible = true
+    }
+
+    VerticalSlidingDrawer(
+        modifier = modifier.fillMaxSize(),
+        drawerContent = {
+            Box(modifier = Modifier.fillMaxSize()) {
+                CircuitContent(AppListScreen)
+                AnimatedVisibility(
+                    visible = settingsVisible,
+                    enter = fadeIn(animationSpec = tween(durationMillis = 1200)),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(32.dp)
+                ) {
+                    SettingsButton(
+                        onClick = { state.onSettingsClicked() },
                     )
-                    .align(Alignment.TopEnd)
-                    .rotate(15f)
+                }
+            }
+        },
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Text(
+                text = state.text,
+                modifier = Modifier.align(Alignment.Center),
             )
+            if (state.homepageAction != null) {
+                CircuitContent(
+                    HomepageActionButton(
+                        smsDestination = state.homepageAction.smsDestination,
+                        emoji = state.homepageAction.emoji,
+                    ),
+                    modifier = Modifier
+                        .padding(
+                            horizontal = 60.dp,
+                            vertical = 100.dp,
+                        )
+                        .align(Alignment.TopEnd)
+                        .rotate(15f)
+                )
+            }
         }
     }
 }
 
 class HomepagePresenter @Inject internal constructor(
+    @param:ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
+    private val intentLauncher: IntentLauncher,
 ) : Presenter<HomepageState> {
 
     @Composable
@@ -77,6 +118,10 @@ class HomepagePresenter @Inject internal constructor(
         return HomepageState(
             text = "Welcome back...",
             homepageAction = homepageActionSettings?.toUiType(),
+            onSettingsClicked = {
+                val intent = SettingsActivity.newActivityIntent(context)
+                intentLauncher.startActivityAsSeparateApp(intent)
+            },
         )
     }
 

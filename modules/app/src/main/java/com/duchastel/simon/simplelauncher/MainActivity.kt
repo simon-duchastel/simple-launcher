@@ -7,15 +7,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
 import com.duchastel.simon.simplelauncher.features.homepage.ui.HomepageScreen
 import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
-import com.duchastel.simon.simplelauncher.libs.ui.components.VerticalSlidingDrawer
 import com.duchastel.simon.simplelauncher.libs.ui.theme.SimpleLauncherTheme
+import com.slack.circuit.backstack.rememberSaveableBackStack
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.foundation.CircuitCompositionLocals
-import com.slack.circuit.foundation.CircuitContent
+import com.slack.circuit.foundation.NavigableCircuitContent
+import com.slack.circuit.foundation.rememberCircuitNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -42,14 +42,11 @@ class MainActivity : ComponentActivity() {
                 SimpleLauncherTheme {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        color = Color.Transparent, // transparent to allow wallpaper to display
+                        color = Color.Transparent,
                     ) {
-                        VerticalSlidingDrawer(
-                            modifier = Modifier.fillMaxSize(),
-                            drawerContent = { CircuitContent(AppListScreen) },
-                        ) {
-                            CircuitContent(HomepageScreen)
-                        }
+                        val backstack = rememberSaveableBackStack(HomepageScreen)
+                        val navigator = rememberCircuitNavigator(backstack)
+                        NavigableCircuitContent(navigator, backstack)
                     }
                 }
             }
