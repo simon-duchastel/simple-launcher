@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.duchastel.simon.simplelauncher.features.settings"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
