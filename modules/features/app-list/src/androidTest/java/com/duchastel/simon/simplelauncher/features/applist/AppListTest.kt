@@ -34,11 +34,13 @@ class AppListTest {
                             label = "Settings",
                             icon = ContextCompat.getDrawable(context, R.drawable.star_on)!!,
                             onClicked = { },
+                            onLongClicked = { },
                         ),
                         App(
                             label = "Phone",
                             icon = ContextCompat.getDrawable(context, R.drawable.star_on)!!,
                             onClicked = { },
+                            onLongClicked = { },
                         )
                     ).toImmutableList()
                 )

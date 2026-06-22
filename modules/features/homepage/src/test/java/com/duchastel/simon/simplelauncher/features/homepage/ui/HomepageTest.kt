@@ -1,8 +1,10 @@
 package com.duchastel.simon.simplelauncher.features.homepage.ui
 
+import android.content.Context
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
+import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import com.slack.circuit.test.test
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -14,8 +16,10 @@ import org.mockito.kotlin.whenever
 
 class HomepagePresenterTest {
 
+    private val context: Context = mock()
     private val settingsRepository: SettingsRepository = mock()
-    private val presenter = HomepagePresenter(settingsRepository)
+    private val intentLauncher: IntentLauncher = mock()
+    private val presenter = HomepagePresenter(context, settingsRepository, intentLauncher)
 
     @Test
     fun `presenter provides default state when no homepage action setting exists`() = runTest {

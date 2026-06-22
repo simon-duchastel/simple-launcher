@@ -39,7 +39,7 @@ class HomepageModule {
                     object : Ui<HomepageState> {
                         @Composable
                         override fun Content(state: HomepageState, modifier: Modifier) {
-                            Homepage(state)
+                            Homepage(state, modifier)
                         }
                     }
                 }

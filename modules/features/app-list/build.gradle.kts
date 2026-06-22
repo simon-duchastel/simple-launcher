@@ -29,7 +29,6 @@ android {
 
 dependencies {
     implementation(project(":modules:libs:ui"))
-    implementation(project(":modules:features:settings"))
     implementation(project(":modules:libs:intents"))
 
     implementation(platform(libs.androidx.compose.bom))
