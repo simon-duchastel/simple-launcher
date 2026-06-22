@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
                 SimpleLauncherTheme {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        color = Color.Transparent,
+                        color = Color.Transparent, // transparent to allow wallpaper to display
                     ) {
                         val backstack = rememberSaveableBackStack(HomepageScreen)
                         val navigator = rememberCircuitNavigator(backstack)
