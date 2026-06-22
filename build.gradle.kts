@@ -2,11 +2,10 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.legacy.kapt) apply false
+    alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.hilt) apply false
 }
 
-// AGP 9 built-in Kotlin handles kapt configuration automatically;
-// no need for manual KaptExtension setup.
+// KSP2 is used instead of legacy-kapt for annotation processing.
