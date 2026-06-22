@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.duchastel.simon.simplelauncher"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.duchastel.simon.simplelauncher"

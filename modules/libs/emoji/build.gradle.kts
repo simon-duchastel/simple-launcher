@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.duchastel.simon.simplelauncher.libs.emoji"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 26
