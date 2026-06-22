@@ -6,10 +6,10 @@ import com.slack.circuit.runtime.ui.Ui
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
+import dagger.hilt.android.components.ActivityComponent
 
 @Module
-@InstallIn(SingletonComponent::class)
+@InstallIn(ActivityComponent::class)
 object AppModule {
     @Provides
     fun provideCircuit(
