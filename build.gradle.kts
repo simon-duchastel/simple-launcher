@@ -8,4 +8,3 @@ plugins {
     alias(libs.plugins.hilt) apply false
 }
 
-// KSP2 is used instead of legacy-kapt for annotation processing.
