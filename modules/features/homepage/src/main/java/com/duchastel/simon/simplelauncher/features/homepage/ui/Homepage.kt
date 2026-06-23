@@ -2,20 +2,16 @@ package com.duchastel.simon.simplelauncher.features.homepage.ui
 
 import android.content.Context
 import android.os.Parcelable
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import com.duchastel.simon.simplelauncher.libs.ui.components.rememberVerticalSlidingDrawerState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -54,51 +50,48 @@ data class HomepageState(
 
 @Composable
 internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
-    var settingsVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        settingsVisible = true
-    }
+    val drawerState = rememberVerticalSlidingDrawerState()
 
-    VerticalSlidingDrawer(
-        modifier = modifier.fillMaxSize(),
-        drawerContent = {
+    Box(modifier = modifier.fillMaxSize()) {
+        VerticalSlidingDrawer(
+            state = drawerState,
+            modifier = Modifier.fillMaxSize(),
+            drawerContent = {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    CircuitContent(AppListScreen)
+                }
+            },
+        ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                CircuitContent(AppListScreen)
-                AnimatedVisibility(
-                    visible = settingsVisible,
-                    enter = fadeIn(animationSpec = tween(durationMillis = 1200)),
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(32.dp)
-                ) {
-                    SettingsButton(
-                        onClick = { state.onSettingsClicked() },
+                Text(
+                    text = state.text,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+                if (state.homepageAction != null) {
+                    CircuitContent(
+                        HomepageActionButton(
+                            smsDestination = state.homepageAction.smsDestination,
+                            emoji = state.homepageAction.emoji,
+                        ),
+                        modifier = Modifier
+                            .padding(
+                                horizontal = 60.dp,
+                                vertical = 100.dp,
+                            )
+                            .align(Alignment.TopEnd)
+                            .rotate(15f)
                     )
                 }
             }
-        },
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Text(
-                text = state.text,
-                modifier = Modifier.align(Alignment.Center),
-            )
-            if (state.homepageAction != null) {
-                CircuitContent(
-                    HomepageActionButton(
-                        smsDestination = state.homepageAction.smsDestination,
-                        emoji = state.homepageAction.emoji,
-                    ),
-                    modifier = Modifier
-                        .padding(
-                            horizontal = 60.dp,
-                            vertical = 100.dp,
-                        )
-                        .align(Alignment.TopEnd)
-                        .rotate(15f)
-                )
-            }
         }
+
+        SettingsButton(
+            onClick = { state.onSettingsClicked() },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(32.dp)
+                .alpha(drawerState.progress),
+        )
     }
 }
 
