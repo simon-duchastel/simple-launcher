@@ -26,8 +26,13 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -53,9 +58,53 @@ enum class DragAnchors {
     Expanded,
 }
 
+@Stable
+class VerticalSlidingDrawerState(
+    initialValue: DragAnchors = DragAnchors.Hidden,
+) {
+    internal val anchoredDraggableState: AnchoredDraggableState<DragAnchors> =
+        AnchoredDraggableState(
+            initialValue = initialValue,
+            anchors = DraggableAnchors {
+                DragAnchors.Hidden at 0f
+                DragAnchors.Expanded at 0f
+            },
+        )
+
+    val currentValue: DragAnchors
+        get() = anchoredDraggableState.currentValue
+
+    val targetValue: DragAnchors
+        get() = anchoredDraggableState.targetValue
+
+    val progress: Float by derivedStateOf(structuralEqualityPolicy()) {
+        val offset = anchoredDraggableState.offset
+        if (offset.isNaN()) {
+            0f
+        } else {
+            val hiddenOffset = anchoredDraggableState.anchors.positionOf(DragAnchors.Hidden)
+            val expandedOffset = anchoredDraggableState.anchors.positionOf(DragAnchors.Expanded)
+            if (hiddenOffset.isNaN() || expandedOffset.isNaN()) {
+                0f
+            } else {
+                val range = hiddenOffset - expandedOffset
+                if (range == 0f) 0f else ((hiddenOffset - offset) / range).coerceIn(0f, 1f)
+            }
+        }
+    }
+}
+
+@Composable
+fun rememberVerticalSlidingDrawerState(
+    initialValue: DragAnchors = DragAnchors.Hidden,
+): VerticalSlidingDrawerState = remember {
+    VerticalSlidingDrawerState(initialValue = initialValue)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerticalSlidingDrawer(
+    state: VerticalSlidingDrawerState = rememberVerticalSlidingDrawerState(),
     modifier: Modifier = Modifier,
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
@@ -72,13 +121,13 @@ fun VerticalSlidingDrawer(
             DragAnchors.Hidden at maxHeightPx
             DragAnchors.Expanded at expandedOffsetPx
         }
-        val state: AnchoredDraggableState<DragAnchors> = remember(expandedTopPadding) {
-            AnchoredDraggableState(
-                initialValue = DragAnchors.Hidden,
-                anchors = anchors,
-            )
+        val drawerState = state.anchoredDraggableState
+        SideEffect {
+            if (drawerState.anchors != anchors) {
+                drawerState.updateAnchors(anchors)
+            }
         }
-        val flingBehavior = AnchoredDraggableDefaults.flingBehavior(state)
+        val flingBehavior = AnchoredDraggableDefaults.flingBehavior(drawerState)
         val interactionSource = remember { MutableInteractionSource() }
         val coroutineScope = rememberCoroutineScope()
 
@@ -93,7 +142,7 @@ fun VerticalSlidingDrawer(
                 ): Offset {
                     val delta = available.y
                     return if (delta < 0f && source == NestedScrollSource.UserInput) {
-                        Offset(x = 0f, y = state.dispatchRawDelta(delta))
+                        Offset(x = 0f, y = drawerState.dispatchRawDelta(delta))
                     } else {
                         Offset.Zero
                     }
@@ -105,7 +154,7 @@ fun VerticalSlidingDrawer(
                     source: NestedScrollSource
                 ): Offset {
                     return if (source == NestedScrollSource.UserInput) {
-                        Offset(x = 0f, y = state.dispatchRawDelta(available.y))
+                        Offset(x = 0f, y = drawerState.dispatchRawDelta(available.y))
                     } else {
                         Offset.Zero
                     }
@@ -113,7 +162,7 @@ fun VerticalSlidingDrawer(
 
                 override suspend fun onPreFling(available: Velocity): Velocity {
                     val toFling = available.y
-                    return if (toFling < 0f && state.offset > state.anchors.minPosition()) {
+                    return if (toFling < 0f && drawerState.offset > drawerState.anchors.minPosition()) {
                         available
                     } else {
                         Velocity.Zero
@@ -125,11 +174,11 @@ fun VerticalSlidingDrawer(
                     available: Velocity
                 ): Velocity {
                     var remaining = available.y
-                    state.anchoredDrag {
+                    drawerState.anchoredDrag {
                         val scrollFlingScope =
                             object : ScrollScope {
                                 override fun scrollBy(pixels: Float): Float {
-                                    dragTo(state.offset + pixels)
+                                    dragTo(drawerState.offset + pixels)
                                     return pixels
                                 }
                             }
@@ -156,13 +205,13 @@ fun VerticalSlidingDrawer(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .pointerInput(state) {
+                    .pointerInput(drawerState) {
                         awaitEachGesture {
                             val down = awaitFirstDown(requireUnconsumed = false)
-                            if (state.offset < maxHeightPx - 1f) return@awaitEachGesture
+                            if (drawerState.offset < maxHeightPx - 1f) return@awaitEachGesture
 
                             val slop = viewConfiguration.touchSlop
-                            val startOffset = state.offset
+                            val startOffset = drawerState.offset
                             var totalDelta = 0f
 
                             var slopExceeded = false
@@ -195,11 +244,11 @@ fun VerticalSlidingDrawer(
                                     change.uptimeMillis,
                                     change.position
                                 )
-                                state.dispatchRawDelta(delta)
+                                drawerState.dispatchRawDelta(delta)
                             }
 
                             val velocity = velocityTracker.calculateVelocity().y
-                            val currentOffset = state.offset
+                            val currentOffset = drawerState.offset
                             val dragDistance = startOffset - currentOffset
 
                             val target = when {
@@ -210,13 +259,13 @@ fun VerticalSlidingDrawer(
                             }
 
                             coroutineScope.launch {
-                                state.anchoredDrag {
+                                drawerState.anchoredDrag {
                                     val anim = Animatable(
                                         currentOffset,
                                         Float.VectorConverter
                                     )
                                     anim.animateTo(
-                                        targetValue = state.anchors.positionOf(target),
+                                        targetValue = drawerState.anchors.positionOf(target),
                                         animationSpec = tween(
                                             durationMillis = 300,
                                             easing = FastOutSlowInEasing
@@ -231,8 +280,7 @@ fun VerticalSlidingDrawer(
                     }
             )
 
-            val progress = (maxHeightPx - state.offset) / (maxHeightPx - expandedOffsetPx)
-            val drawerAlpha = progress.coerceIn(0f, 1f)
+            val drawerAlpha = state.progress
 
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -242,10 +290,10 @@ fun VerticalSlidingDrawer(
                     modifier = Modifier
                         .then(if (isLargeScreen) Modifier.width(BottomSheetDefaults.SheetMaxWidth) else Modifier.fillMaxWidth())
                         .height(sheetHeight)
-                        .offset { IntOffset(0, state.offset.roundToInt()) }
+                        .offset { IntOffset(0, drawerState.offset.roundToInt()) }
                         .alpha(drawerAlpha)
                         .anchoredDraggable(
-                            state = state,
+                            state = drawerState,
                             orientation = Orientation.Vertical,
                             flingBehavior = flingBehavior,
                             reverseDirection = false,
