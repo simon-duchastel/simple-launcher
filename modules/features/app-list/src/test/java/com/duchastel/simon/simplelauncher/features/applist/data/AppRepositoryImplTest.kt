@@ -105,6 +105,28 @@ class AppRepositoryImplTest {
     }
 
     @Test
+    fun `getInstalledApps sorts case-insensitively so lowercase-starting labels are not pushed to the end`() {
+        val labels = listOf("Aza", "abc", "aZZ", "ZZZ", "zzz")
+        val resolveInfos = labels.mapIndexed { index, label ->
+            object : ResolveInfo() {
+                override fun loadLabel(pm: PackageManager): CharSequence = label
+                override fun loadIcon(pm: PackageManager): Drawable = mock()
+            }.apply { activityInfo = ActivityInfo().apply { packageName = "com.example.app$index" } }
+        }
+
+        whenever(packageManager.queryIntentActivities(any(), eq(0))).thenReturn(
+            resolveInfos, // first call: CATEGORY_LAUNCHER
+            emptyList(),  // second call: CATEGORY_HOME
+        )
+
+        val result = appRepository.getInstalledApps()
+        assertEquals(
+            listOf("abc", "Aza", "aZZ", "ZZZ", "zzz"),
+            result.map { it.label },
+        )
+    }
+
+    @Test
     fun `launchApp starts correct intent`() {
         val app = App(label = "App1", packageName = "com.example.app1", icon = mock())
         val intent = mock<Intent>()
