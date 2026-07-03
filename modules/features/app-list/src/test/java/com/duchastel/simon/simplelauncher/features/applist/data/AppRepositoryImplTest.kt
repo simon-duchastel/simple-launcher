@@ -106,28 +106,24 @@ class AppRepositoryImplTest {
 
     @Test
     fun `getInstalledApps sorts case-insensitively so lowercase-starting labels are not pushed to the end`() {
-        val zoom = object : ResolveInfo() {
-            override fun loadLabel(pm: PackageManager): CharSequence = "Zoom"
-            override fun loadIcon(pm: PackageManager): Drawable = mock()
-        }.apply { activityInfo = ActivityInfo().apply { packageName = "com.example.zoom" } }
-
-        val luckin = object : ResolveInfo() {
-            override fun loadLabel(pm: PackageManager): CharSequence = "luckin coffee"
-            override fun loadIcon(pm: PackageManager): Drawable = mock()
-        }.apply { activityInfo = ActivityInfo().apply { packageName = "com.luckin.client.us" } }
-
-        val mTicket = object : ResolveInfo() {
-            override fun loadLabel(pm: PackageManager): CharSequence = "mTicket"
-            override fun loadIcon(pm: PackageManager): Drawable = mock()
-        }.apply { activityInfo = ActivityInfo().apply { packageName = "com.example.mticket" } }
+        val labels = listOf("Aza", "abc", "aZZ", "ZZZ", "zzz")
+        val resolveInfos = labels.mapIndexed { index, label ->
+            object : ResolveInfo() {
+                override fun loadLabel(pm: PackageManager): CharSequence = label
+                override fun loadIcon(pm: PackageManager): Drawable = mock()
+            }.apply { activityInfo = ActivityInfo().apply { packageName = "com.example.app$index" } }
+        }
 
         whenever(packageManager.queryIntentActivities(any(), eq(0))).thenReturn(
-            listOf(zoom, luckin, mTicket), // first call: CATEGORY_LAUNCHER (given out-of-order)
-            emptyList(),                   // second call: CATEGORY_HOME
+            resolveInfos, // first call: CATEGORY_LAUNCHER
+            emptyList(),  // second call: CATEGORY_HOME
         )
 
         val result = appRepository.getInstalledApps()
-        assertEquals(listOf("luckin coffee", "mTicket", "Zoom"), result.map { it.label })
+        assertEquals(
+            listOf("abc", "Aza", "aZZ", "ZZZ", "zzz"),
+            result.map { it.label },
+        )
     }
 
     @Test
