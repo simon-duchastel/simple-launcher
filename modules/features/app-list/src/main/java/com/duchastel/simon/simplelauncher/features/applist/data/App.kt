@@ -24,10 +24,4 @@ data class App(
      * The drawable icon displayed in the launcher UI for this app.
      */
     val icon: Drawable
-) {
-
-    /**
-     * Case-insensitive key used to sort apps alphabetically.
-     */
-    fun sortKey(): String = label.lowercase()
-}
+)
