@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
@@ -77,6 +79,10 @@ class VerticalSlidingDrawerState(
     val targetValue: DragAnchors
         get() = anchoredDraggableState.targetValue
 
+    suspend fun collapse() {
+        anchoredDraggableState.animateTo(DragAnchors.Hidden)
+    }
+
     val progress: Float by derivedStateOf(structuralEqualityPolicy()) {
         val offset = anchoredDraggableState.offset
         if (offset.isNaN()) {
@@ -130,6 +136,11 @@ fun VerticalSlidingDrawer(
         val flingBehavior = AnchoredDraggableDefaults.flingBehavior(drawerState)
         val interactionSource = remember { MutableInteractionSource() }
         val coroutineScope = rememberCoroutineScope()
+
+        val isExpanded by remember { derivedStateOf { state.currentValue == DragAnchors.Expanded } }
+        BackHandler(enabled = isExpanded) {
+            coroutineScope.launch { state.collapse() }
+        }
 
         val positionalThreshold = with(density) { 56.dp.toPx() }
         val velocityThreshold = with(density) { 125.dp.toPx() }
