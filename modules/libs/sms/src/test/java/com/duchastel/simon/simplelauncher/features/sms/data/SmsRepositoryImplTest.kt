@@ -41,7 +41,7 @@ class SmsRepositoryImplTest {
     fun setUp() {
         smsManager = mock()
         permissionRepository = mock {
-            onBlocking { requestPermission(Permission.SEND_SMS) } doReturn true
+            on { requestPermission(Permission.SEND_SMS) } doReturn true
         }
         packageManager = mock {
             on { hasSystemFeature(PackageManager.FEATURE_TELEPHONY) } doReturn true

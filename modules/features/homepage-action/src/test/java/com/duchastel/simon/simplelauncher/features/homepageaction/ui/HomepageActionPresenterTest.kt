@@ -74,7 +74,7 @@ class HomepageActionPresenterTest {
     @Test
     fun `onLongClick calls sendSms on repository with repeated emoji`() = runTest {
         val scope = mock<LongClickScope> {
-            onBlocking { tryAwaitRelease() } doAnswer {
+            on { tryAwaitRelease() } doAnswer {
                 runBlocking {
                     delay(1500) // 3 emojis expected, since we delay 3x 500ms = 1500ms
                     true
@@ -94,7 +94,7 @@ class HomepageActionPresenterTest {
     @Test
     fun `onLongClick does not sendSms on repository when cancelled`() = runTest {
         val scope = mock<LongClickScope> {
-            onBlocking { tryAwaitRelease() }.thenReturn(false)
+            on { tryAwaitRelease() }.thenReturn(false)
         }
         whenever(smsRepository.sendSms(any(), any())).thenReturn(true)
 
