@@ -23,7 +23,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
-import androidx.activity.compose.BackHandler
+import androidx.activity.BackEventCompat
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
@@ -51,7 +52,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -138,8 +142,27 @@ fun VerticalSlidingDrawer(
         val coroutineScope = rememberCoroutineScope()
 
         val isExpanded by remember { derivedStateOf { state.currentValue == DragAnchors.Expanded } }
-        BackHandler(enabled = isExpanded) {
-            coroutineScope.launch { state.collapse() }
+        PredictiveBackHandler(enabled = isExpanded) { progress ->
+            val hiddenOffset = maxHeightPx
+            val expandedOffset = expandedOffsetPx
+            val peekFraction = 0.3f
+
+            try {
+                progress.collect { event: BackEventCompat ->
+                    val targetOffset = expandedOffset +
+                        (hiddenOffset - expandedOffset) * event.progress * peekFraction
+                    val delta = targetOffset - drawerState.offset
+                    if (!delta.isNaN()) {
+                        drawerState.dispatchRawDelta(delta)
+                    }
+                }
+                drawerState.animateTo(DragAnchors.Hidden)
+            } catch (e: CancellationException) {
+                withContext(NonCancellable) {
+                    drawerState.animateTo(DragAnchors.Expanded)
+                }
+                throw e
+            }
         }
 
         val positionalThreshold = with(density) { 56.dp.toPx() }
