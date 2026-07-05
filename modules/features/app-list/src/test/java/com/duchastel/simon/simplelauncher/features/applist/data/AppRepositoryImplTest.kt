@@ -41,10 +41,14 @@ class AppRepositoryImplTest {
     fun `getInstalledApps returns mapped and sorted apps`() {
         val icon1 = mock<Drawable>()
         val icon2 = mock<Drawable>()
-        val activityInfo1 = ActivityInfo()
-        activityInfo1.packageName = "com.example.appb"
-        val activityInfo2 = ActivityInfo()
-        activityInfo2.packageName = "com.example.appa"
+        val activityInfo1 = ActivityInfo().apply {
+            packageName = "com.example.appb"
+            name = "com.example.appb.MainActivity"
+        }
+        val activityInfo2 = ActivityInfo().apply {
+            packageName = "com.example.appa"
+            name = "com.example.appa.MainActivity"
+        }
 
         val resolveInfo1 = object : ResolveInfo() {
             override fun loadLabel(pm: PackageManager): CharSequence = "B App"
@@ -75,9 +79,18 @@ class AppRepositoryImplTest {
         val selfIcon = mock<Drawable>()
         val otherLauncherIcon = mock<Drawable>()
 
-        val regularAppInfo = ActivityInfo().apply { packageName = "com.example.regular" }
-        val selfInfo = ActivityInfo().apply { packageName = "com.duchastel.simon.simplelauncher" }
-        val otherLauncherInfo = ActivityInfo().apply { packageName = "com.other.launcher" }
+        val regularAppInfo = ActivityInfo().apply {
+            packageName = "com.example.regular"
+            name = "com.example.regular.MainActivity"
+        }
+        val selfInfo = ActivityInfo().apply {
+            packageName = "com.duchastel.simon.simplelauncher"
+            name = "com.duchastel.simon.simplelauncher.MainActivity"
+        }
+        val otherLauncherInfo = ActivityInfo().apply {
+            packageName = "com.other.launcher"
+            name = "com.other.launcher.MainActivity"
+        }
 
         val regularResolveInfo = object : ResolveInfo() {
             override fun loadLabel(pm: PackageManager): CharSequence = "Regular App"
@@ -111,7 +124,12 @@ class AppRepositoryImplTest {
             object : ResolveInfo() {
                 override fun loadLabel(pm: PackageManager): CharSequence = label
                 override fun loadIcon(pm: PackageManager): Drawable = mock()
-            }.apply { activityInfo = ActivityInfo().apply { packageName = "com.example.app$index" } }
+            }.apply {
+                activityInfo = ActivityInfo().apply {
+                    packageName = "com.example.app$index"
+                    name = "com.example.app$index.MainActivity"
+                }
+            }
         }
 
         whenever(packageManager.queryIntentActivities(any(), eq(0))).thenReturn(
@@ -124,6 +142,38 @@ class AppRepositoryImplTest {
             listOf("abc", "Aza", "aZZ", "ZZZ", "zzz"),
             result.map { it.label },
         )
+    }
+
+    @Test
+    fun `getInstalledApps keeps apps with a launcher activity even if the same package has a separate home activity`() {
+        val settingsIcon = mock<Drawable>()
+        val settingsLauncherInfo = ActivityInfo().apply {
+            packageName = "com.android.settings"
+            name = "com.android.settings.Settings"
+        }
+        val settingsFallbackHomeInfo = ActivityInfo().apply {
+            packageName = "com.android.settings"
+            name = "com.android.settings.FallbackHome"
+        }
+
+        val settingsResolveInfo = object : ResolveInfo() {
+            override fun loadLabel(pm: PackageManager): CharSequence = "Settings"
+            override fun loadIcon(pm: PackageManager): Drawable = settingsIcon
+        }.apply { activityInfo = settingsLauncherInfo }
+
+        val fallbackHomeResolveInfo = object : ResolveInfo() {
+            override fun loadLabel(pm: PackageManager): CharSequence = "FallbackHome"
+            override fun loadIcon(pm: PackageManager): Drawable = mock()
+        }.apply { activityInfo = settingsFallbackHomeInfo }
+
+        whenever(packageManager.queryIntentActivities(any(), eq(0))).thenReturn(
+            listOf(settingsResolveInfo), // first call: CATEGORY_LAUNCHER
+            listOf(fallbackHomeResolveInfo), // second call: CATEGORY_HOME
+        )
+
+        val result = appRepository.getInstalledApps()
+        assertEquals(1, result.size)
+        assertEquals("Settings", result[0].label)
     }
 
     @Test
