@@ -5,11 +5,14 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
@@ -38,6 +41,8 @@ class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        enableEdgeToEdge()
+
         permissionsRepository.activityOnCreate()
         contactsRepository.activityOnCreate()
 
@@ -47,9 +52,15 @@ class SettingsActivity : ComponentActivity() {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                     ) {
-                        val backstack = rememberSaveableBackStack(SettingsScreen)
-                        val navigator = rememberCircuitNavigator(backstack)
-                        NavigableCircuitContent(navigator, backstack)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .windowInsetsPadding(WindowInsets.systemBars)
+                        ) {
+                            val backstack = rememberSaveableBackStack(SettingsScreen)
+                            val navigator = rememberCircuitNavigator(backstack)
+                            NavigableCircuitContent(navigator, backstack)
+                        }
                     }
                 }
             }
