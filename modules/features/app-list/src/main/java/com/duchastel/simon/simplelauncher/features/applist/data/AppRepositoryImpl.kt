@@ -9,6 +9,11 @@ import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
+private data class ComponentIdentifier(
+    val packageName: String,
+    val className: String,
+)
+
 class AppRepositoryImpl @Inject internal constructor(
     @param:ApplicationContext private val context: Context,
     private val intentLauncher: IntentLauncher,
@@ -27,10 +32,21 @@ class AppRepositoryImpl @Inject internal constructor(
 
         val launcherApps = packageManager.queryIntentActivities(launcherIntent, 0)
         val homeApps = packageManager.queryIntentActivities(homeIntent, 0)
-        val homePackageNames = homeApps.map { it.activityInfo.packageName }.toSet()
+        val homeComponentNames = homeApps.map { resolveInfo ->
+            ComponentIdentifier(
+                packageName = resolveInfo.activityInfo.packageName,
+                className = resolveInfo.activityInfo.name,
+            )
+        }.toSet()
 
         return launcherApps
-            .filter { it.activityInfo.packageName !in homePackageNames }
+            .filter { resolveInfo ->
+                val componentIdentifier = ComponentIdentifier(
+                    packageName = resolveInfo.activityInfo.packageName,
+                    className = resolveInfo.activityInfo.name,
+                )
+                componentIdentifier !in homeComponentNames
+            }
             .map { resolveInfo ->
                 App(
                     label = resolveInfo.loadLabel(packageManager).toString(),
