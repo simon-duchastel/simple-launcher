@@ -23,6 +23,7 @@ import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
 import com.duchastel.simon.simplelauncher.intents.IntentLauncher
+import com.duchastel.simon.simplelauncher.libs.ui.components.DragAnchors
 import com.duchastel.simon.simplelauncher.libs.ui.components.SettingsButton
 import com.duchastel.simon.simplelauncher.libs.ui.components.VerticalSlidingDrawer
 import com.slack.circuit.foundation.CircuitContent
@@ -50,7 +51,7 @@ data class HomepageState(
 
 @Composable
 internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
-    val drawerState = rememberVerticalSlidingDrawerState()
+    val drawerState = rememberVerticalSlidingDrawerState(DragAnchors.Hidden)
 
     Box(modifier = modifier.fillMaxSize()) {
         VerticalSlidingDrawer(
