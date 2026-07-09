@@ -8,7 +8,8 @@
             android:launchMode="singleTask"
             android:label="@string/title_activity_settings"
             android:exported="true"
-            android:excludeFromRecents="false" />
+            android:excludeFromRecents="false"
+            android:theme="@style/Theme.SimpleLauncher.Settings" />
     </application>
 
 </manifest>
