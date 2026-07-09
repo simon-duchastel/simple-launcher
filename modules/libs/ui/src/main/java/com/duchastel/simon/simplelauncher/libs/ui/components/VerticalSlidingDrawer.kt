@@ -71,10 +71,6 @@ class VerticalSlidingDrawerState(
     internal val anchoredDraggableState: AnchoredDraggableState<DragAnchors> =
         AnchoredDraggableState(
             initialValue = initialValue,
-            anchors = DraggableAnchors {
-                DragAnchors.Hidden at 0f
-                DragAnchors.Expanded at 0f
-            },
         )
 
     val currentValue: DragAnchors
@@ -114,8 +110,8 @@ fun rememberVerticalSlidingDrawerState(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerticalSlidingDrawer(
-    state: VerticalSlidingDrawerState = rememberVerticalSlidingDrawerState(),
     modifier: Modifier = Modifier,
+    state: VerticalSlidingDrawerState = rememberVerticalSlidingDrawerState(),
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
