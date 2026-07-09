@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
@@ -22,6 +23,7 @@ import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.foundation.CircuitCompositionLocals
 import com.slack.circuit.foundation.NavigableCircuitContent
 import com.slack.circuit.foundation.rememberCircuitNavigator
+import com.slack.circuitx.gesturenavigation.GestureNavigationDecorationFactory
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -59,7 +61,14 @@ class SettingsActivity : ComponentActivity() {
                         ) {
                             val backstack = rememberSaveableBackStack(SettingsScreen)
                             val navigator = rememberCircuitNavigator(backstack)
-                            NavigableCircuitContent(navigator, backstack)
+                            val decorationFactory = remember(navigator) {
+                                GestureNavigationDecorationFactory(onBackInvoked = navigator::pop)
+                            }
+                            NavigableCircuitContent(
+                                navigator = navigator,
+                                backStack = backstack,
+                                decoratorFactory = decorationFactory,
+                            )
                         }
                     }
                 }
