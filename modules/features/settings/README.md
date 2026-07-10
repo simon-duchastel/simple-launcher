@@ -45,6 +45,7 @@ modules/features/settings/
 - **App Launch Settings** - Launch behavior and animations
 - **Gesture Configuration** - Custom gesture actions
 - **Search Settings** - Search behavior and indexing
+- **Center Widget** - Select an app widget to display on the home screen
 
 ### Privacy & Permissions
 - **SMS Permissions** - SMS functionality controls
@@ -70,6 +71,7 @@ Container for setting values with:
 This module integrates with:
 - **Homepage Feature** - Applies visual and behavioral settings
 - **App List Feature** - Filters and sorting preferences  
+- **App Widgets Feature** - Center widget selection and binding
 - **SMS Library** - SMS-related configuration
 - **UI Library** - Theme and styling settings
 
@@ -77,6 +79,7 @@ This module integrates with:
 
 - **DataStore** - Modern preferences storage
 - **Jetpack Compose** - Settings UI
+- Features: `app-widgets`
 - Libs: `ui`, `core-ext`
 - Hilt dependency injection
 

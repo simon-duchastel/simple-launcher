@@ -123,6 +123,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
                     },
                 )
             }
+            Setting.CenterWidget -> error("CenterWidget is not configurable yet")
         }
     }
 
