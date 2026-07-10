@@ -22,9 +22,9 @@ interface AppWidgetRepository {
     suspend fun allocateWidgetId(): Int
     
     /**
-     * Binds a widget to the launcher
+     * Binds a widget to the launcher and returns its [WidgetData] on success.
      */
-    suspend fun bindWidget(widgetId: Int, providerInfo: WidgetProviderInfo): Result<Unit>
+    suspend fun bindWidget(widgetId: Int, providerInfo: WidgetProviderInfo): Result<WidgetData>
     
     /**
      * Removes a widget from the launcher

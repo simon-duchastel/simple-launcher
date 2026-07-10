@@ -108,7 +108,7 @@ val availableWidgets = appWidgetRepository.getAvailableWidgets()
 
 // Bind a widget
 val widgetId = appWidgetRepository.allocateWidgetId()
-appWidgetRepository.bindWidget(widgetId, providerInfo)
+val widgetData = appWidgetRepository.bindWidget(widgetId, providerInfo).getOrThrow()
 ```
 
 ### Compose Integration
