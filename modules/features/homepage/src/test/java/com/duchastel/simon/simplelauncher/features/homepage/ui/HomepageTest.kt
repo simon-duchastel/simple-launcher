@@ -27,7 +27,6 @@ class HomepagePresenterTest {
 
         presenter.test {
             val state = awaitItem()
-            assert(state.text == "Welcome back...")
             assert(state.homepageAction == null)
         }
     }
@@ -43,7 +42,6 @@ class HomepagePresenterTest {
         presenter.test {
             val state = expectMostRecentItem()
 
-            Assert.assertEquals("Welcome back...", state.text)
             Assert.assertEquals("👋", state.homepageAction?.emoji)
             Assert.assertEquals("1234567890", state.homepageAction?.smsDestination)
         }

@@ -11,7 +11,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.duchastel.simon.simplelauncher.libs.ui.components.rememberVerticalSlidingDrawerState
 import androidx.compose.runtime.collectAsState
@@ -44,7 +43,6 @@ import javax.inject.Inject
 data object HomepageScreen : Screen, Parcelable
 
 data class HomepageState(
-    val text: String,
     val homepageAction: HomepageAction?,
     val onSettingsClicked: () -> Unit,
 ) : CircuitUiState {
@@ -81,10 +79,6 @@ internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
             },
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                Text(
-                    text = state.text,
-                    modifier = Modifier.align(Alignment.Center),
-                )
                 if (state.homepageAction != null) {
                     CircuitContent(
                         HomepageActionButton(
@@ -127,7 +121,6 @@ class HomepagePresenter @Inject internal constructor(
 
         val homepageActionSettings = settings as? SettingData.HomepageActionSettingData
         return HomepageState(
-            text = "Welcome back...",
             homepageAction = homepageActionSettings?.toUiType(),
             onSettingsClicked = {
                 val intent = SettingsActivity.newActivityIntent(context)
