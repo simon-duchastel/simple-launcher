@@ -4,16 +4,19 @@ import com.duchastel.simon.simplelauncher.libs.phonenumber.data.PhoneNumberValid
 import com.duchastel.simon.simplelauncher.libs.emoji.data.EmojiValidator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.AppWidgetRepository
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetProviderInfo
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
-import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingState.ButtonState
-import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ModifySettingState.HomepageActionState
+import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ButtonState
 import com.duchastel.simon.simplelauncher.libs.permissions.data.Permission
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
 import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
@@ -23,6 +26,7 @@ import com.slack.circuit.runtime.screen.Screen
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
@@ -33,6 +37,7 @@ class ModifySettingPresenter @AssistedInject internal constructor(
     @Assisted private val screen: ModifySettingScreen,
     @Assisted private val navigator: Navigator,
     private val settingsRepository: SettingsRepository,
+    private val appWidgetRepository: AppWidgetRepository,
     private val permissionsRepository: PermissionsRepository,
     private val contactsRepository: ContactsRepository,
     private val phoneNumberValidator: PhoneNumberValidator,
@@ -42,89 +47,164 @@ class ModifySettingPresenter @AssistedInject internal constructor(
     @Composable
     override fun present(): ModifySettingState {
         return when (screen.setting) {
-            Setting.HomepageAction -> {
-                var emoji by remember { mutableStateOf("") }
-                var isEmojiError by remember { mutableStateOf(false) }
-                var phoneNumber by remember { mutableStateOf("") }
-                var isPhoneNumberError by remember { mutableStateOf(false) }
-                var saveButtonState: ButtonState by remember { mutableStateOf(ButtonState.Loading) }
-
-                LaunchedEffect(Unit) {
-                    settingsRepository.getSettingsFlow(Setting.HomepageAction)?.collect {
-                        saveButtonState = ButtonState.Enabled
-                        (it as? SettingData.HomepageActionSettingData)?.let {
-                            emoji = it.emoji
-                            isEmojiError = !emojiValidator.isEmoji(it.emoji)
-                            phoneNumber = it.phoneNumber
-                            isPhoneNumberError = !phoneNumberValidator.isValidPhoneNumber(phoneNumber)
-                        }
-                    }
-                }
-                LaunchedEffect(isPhoneNumberError, isEmojiError) {
-                    // don't update the save button if we're loading
-                    if (saveButtonState is ButtonState.Loading) return@LaunchedEffect
-
-                    saveButtonState = if (isEmojiError || isPhoneNumberError) {
-                        ButtonState.Disabled
-                    } else {
-                        ButtonState.Enabled
-                    }
-                }
-
-                val coroutineScope = rememberCoroutineScope()
-                HomepageActionState(
-                    emoji = emoji,
-                    isEmojiError = isEmojiError,
-                    phoneNumber = phoneNumber,
-                    isPhoneNumberError = isPhoneNumberError,
-                    onEmojiChanged = { updatedEmoji ->
-                        // don't process the change if we're loading
-                        if (saveButtonState !is ButtonState.Loading) {
-                            val hasError = (updatedEmoji.isNotEmpty() && !emojiValidator.isEmoji(updatedEmoji))
-                            if (!hasError) {
-                                // only update the emoji if it's valid
-                                emoji = updatedEmoji
-                            }
-                            isEmojiError = hasError
-                        }
-                    },
-                    onPhoneNumberChanged = { updatedPhoneNumber ->
-                        // don't process the change if we're loading
-                        if (saveButtonState !is ButtonState.Loading) {
-                            phoneNumber = updatedPhoneNumber
-                            isPhoneNumberError = phoneNumber.isNotEmpty() && !phoneNumberValidator.isValidPhoneNumber(updatedPhoneNumber)
-                        }
-                    },
-                    saveButtonState = saveButtonState,
-                    onSaveButtonClicked = {
-                        coroutineScope.launch {
-                            val saveSuccessful = settingsRepository.saveSetting(
-                                SettingData.HomepageActionSettingData(
-                                    emoji = emoji,
-                                    phoneNumber = phoneNumber
-                                )
-                            )
-                            if (saveSuccessful) {
-                                navigator.pop()
-                            }
-                        }
-                    },
-                    onChooseFromContactsClicked = {
-                        coroutineScope.launch {
-                            val permissionGranted = permissionsRepository.requestPermission(Permission.READ_CONTACTS)
-                            if (permissionGranted) {
-                                val contact = contactsRepository.pickContact()
-                                contact?.let {
-                                    phoneNumber = it.phoneNumber
-                                    isPhoneNumberError = phoneNumber.isNotEmpty() && !phoneNumberValidator.isValidPhoneNumber(phoneNumber)
-                                }
-                            }
-                        }
-                    },
-                )
-            }
-            Setting.CenterWidget -> error("CenterWidget is not configurable yet")
+            Setting.HomepageAction -> presentHomepageActionState()
+            Setting.CenterWidget -> presentCenterWidgetState()
         }
+    }
+
+    @Composable
+    private fun presentHomepageActionState(): HomepageActionState {
+        var emoji by remember { mutableStateOf("") }
+        var isEmojiError by remember { mutableStateOf(false) }
+        var phoneNumber by remember { mutableStateOf("") }
+        var isPhoneNumberError by remember { mutableStateOf(false) }
+        var saveButtonState: ButtonState by remember { mutableStateOf(ButtonState.Loading) }
+
+        LaunchedEffect(Unit) {
+            settingsRepository.getSettingsFlow(Setting.HomepageAction)?.collect {
+                saveButtonState = ButtonState.Enabled
+                (it as? SettingData.HomepageActionSettingData)?.let {
+                    emoji = it.emoji
+                    isEmojiError = !emojiValidator.isEmoji(it.emoji)
+                    phoneNumber = it.phoneNumber
+                    isPhoneNumberError = !phoneNumberValidator.isValidPhoneNumber(phoneNumber)
+                }
+            }
+        }
+        LaunchedEffect(isPhoneNumberError, isEmojiError) {
+            // don't update the save button if we're loading
+            if (saveButtonState is ButtonState.Loading) return@LaunchedEffect
+
+            saveButtonState = if (isEmojiError || isPhoneNumberError) {
+                ButtonState.Disabled
+            } else {
+                ButtonState.Enabled
+            }
+        }
+
+        val coroutineScope = rememberCoroutineScope()
+        return HomepageActionState(
+            saveButtonState = saveButtonState,
+            onSaveButtonClicked = {
+                coroutineScope.launch {
+                    val saveSuccessful = settingsRepository.saveSetting(
+                        SettingData.HomepageActionSettingData(
+                            emoji = emoji,
+                            phoneNumber = phoneNumber
+                        )
+                    )
+                    if (saveSuccessful) {
+                        navigator.pop()
+                    }
+                }
+            },
+            emoji = emoji,
+            isEmojiError = isEmojiError,
+            phoneNumber = phoneNumber,
+            isPhoneNumberError = isPhoneNumberError,
+            onEmojiChanged = { updatedEmoji ->
+                // don't process the change if we're loading
+                if (saveButtonState !is ButtonState.Loading) {
+                    val hasError = (updatedEmoji.isNotEmpty() && !emojiValidator.isEmoji(updatedEmoji))
+                    if (!hasError) {
+                        // only update the emoji if it's valid
+                        emoji = updatedEmoji
+                    }
+                    isEmojiError = hasError
+                }
+            },
+            onPhoneNumberChanged = { updatedPhoneNumber ->
+                // don't process the change if we're loading
+                if (saveButtonState !is ButtonState.Loading) {
+                    phoneNumber = updatedPhoneNumber
+                    isPhoneNumberError = phoneNumber.isNotEmpty() && !phoneNumberValidator.isValidPhoneNumber(updatedPhoneNumber)
+                }
+            },
+            onChooseFromContactsClicked = {
+                coroutineScope.launch {
+                    val permissionGranted = permissionsRepository.requestPermission(Permission.READ_CONTACTS)
+                    if (permissionGranted) {
+                        val contact = contactsRepository.pickContact()
+                        contact?.let {
+                            phoneNumber = it.phoneNumber
+                            isPhoneNumberError = phoneNumber.isNotEmpty() && !phoneNumberValidator.isValidPhoneNumber(phoneNumber)
+                        }
+                    }
+                }
+            },
+        )
+    }
+
+    @Composable
+    private fun presentCenterWidgetState(): CenterWidgetState {
+        val coroutineScope = rememberCoroutineScope()
+        val currentSetting by remember {
+            settingsRepository.getSettingsFlow(Setting.CenterWidget) ?: flowOf(null)
+        }.collectAsState(null)
+        val currentWidget = (currentSetting as? SettingData.CenterWidgetSettingData)?.widgetData
+
+        var availableWidgets by remember { mutableStateOf<List<WidgetProviderInfo>>(emptyList()) }
+        var isLoading by remember { mutableStateOf(true) }
+        var loadError by remember { mutableStateOf<String?>(null) }
+        var bindError by remember { mutableStateOf<String?>(null) }
+
+        LaunchedEffect(Unit) {
+            loadAvailableWidgets(
+                onLoading = { isLoading = it },
+                onError = { loadError = it },
+                onSuccess = { availableWidgets = it },
+            )
+        }
+
+        return CenterWidgetState(
+            availableWidgets = availableWidgets,
+            currentWidget = currentWidget,
+            isLoading = isLoading,
+            errorMessage = loadError ?: bindError,
+            onWidgetSelected = { providerInfo ->
+                coroutineScope.launch {
+                    bindError = null
+                    currentWidget?.let { appWidgetRepository.removeWidget(it.widgetId) }
+                    bindWidget(providerInfo).fold(
+                        onSuccess = { widgetData ->
+                            settingsRepository.saveSetting(SettingData.CenterWidgetSettingData(widgetData))
+                            navigator.pop()
+                        },
+                        onFailure = { error ->
+                            bindError = error.message ?: "Failed to bind widget"
+                        },
+                    )
+                }
+            },
+            onClearWidget = {
+                coroutineScope.launch {
+                    currentWidget?.let { appWidgetRepository.removeWidget(it.widgetId) }
+                    settingsRepository.clearSetting(Setting.CenterWidget)
+                    navigator.pop()
+                }
+            },
+        )
+    }
+
+    private suspend fun loadAvailableWidgets(
+        onLoading: (Boolean) -> Unit,
+        onError: (String?) -> Unit,
+        onSuccess: (List<WidgetProviderInfo>) -> Unit,
+    ) {
+        try {
+            onLoading(true)
+            onError(null)
+            onSuccess(appWidgetRepository.getAvailableWidgets())
+        } catch (e: Exception) {
+            onError("Failed to load widgets: ${e.message}")
+        } finally {
+            onLoading(false)
+        }
+    }
+
+    private suspend fun bindWidget(providerInfo: WidgetProviderInfo): Result<WidgetData> {
+        val widgetId = appWidgetRepository.allocateWidgetId()
+        return appWidgetRepository.bindWidget(widgetId, providerInfo)
     }
 
     @AssistedFactory
@@ -132,4 +212,3 @@ class ModifySettingPresenter @AssistedInject internal constructor(
         fun create(screen: ModifySettingScreen, navigator: Navigator): ModifySettingPresenter
     }
 }
-

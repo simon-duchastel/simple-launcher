@@ -1,8 +1,14 @@
 package com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting
 
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.AppWidgetRepository
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetProviderInfo
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
+import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.ButtonState
+import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.CenterWidgetState
+import com.duchastel.simon.simplelauncher.features.settings.ui.modifysetting.HomepageActionState
 import com.duchastel.simon.simplelauncher.features.settings.ui.settings.SettingsScreen
 import com.duchastel.simon.simplelauncher.libs.permissions.data.Permission
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
@@ -28,6 +34,7 @@ import org.mockito.kotlin.whenever
 class ModifySettingPresenterTest {
 
     private val repository: SettingsRepository = mock()
+    private val appWidgetRepository: AppWidgetRepository = mock()
     private val permissionsRepository: PermissionsRepository = mock()
     private val contactsRepository: ContactsRepository = mock()
     private val phoneNumberValidator: PhoneNumberValidator = mock()
@@ -49,6 +56,7 @@ class ModifySettingPresenterTest {
             ModifySettingScreen(setting),
             navigator,
             repository,
+            appWidgetRepository,
             permissionsRepository,
             contactsRepository,
             phoneNumberValidator,
@@ -62,7 +70,7 @@ class ModifySettingPresenterTest {
         presenter.test {
             val state = awaitItem()
 
-            assert(state is ModifySettingState.HomepageActionState)
+            assert(state is HomepageActionState)
         }
     }
 
@@ -77,13 +85,13 @@ class ModifySettingPresenterTest {
 
         presenter.test {
             awaitItem() // Skip initial loading state
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
 
             assert(state.emoji == "😊")
             assert(!state.isEmojiError)
             assert(state.phoneNumber == "1234567890")
             assert(!state.isPhoneNumberError)
-            assert(state.saveButtonState == ModifySettingState.ButtonState.Enabled)
+            assert(state.saveButtonState == ButtonState.Enabled)
         }
     }
 
@@ -97,14 +105,14 @@ class ModifySettingPresenterTest {
         whenever(emojiValidator.isEmoji("1")).thenReturn(false)
 
         presenter.test {
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
             state.onEmojiChanged("1")
             runCurrent()
 
-            val stateWithEmojiChanged = expectMostRecentItem() as ModifySettingState.HomepageActionState
+            val stateWithEmojiChanged = expectMostRecentItem() as HomepageActionState
             assert(stateWithEmojiChanged.isEmojiError)
             assert(stateWithEmojiChanged.emoji == "😊")
-            assert(stateWithEmojiChanged.saveButtonState == ModifySettingState.ButtonState.Disabled)
+            assert(stateWithEmojiChanged.saveButtonState == ButtonState.Disabled)
 
             cancelAndConsumeRemainingEvents()
         }
@@ -120,14 +128,14 @@ class ModifySettingPresenterTest {
         whenever(emojiValidator.isEmoji("🙀")).thenReturn(true)
 
         presenter.test {
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
             state.onEmojiChanged("🙀")
             runCurrent()
 
-            val stateWithEmojiChanged = expectMostRecentItem() as ModifySettingState.HomepageActionState
+            val stateWithEmojiChanged = expectMostRecentItem() as HomepageActionState
             assert(!stateWithEmojiChanged.isEmojiError)
             assert(stateWithEmojiChanged.emoji == "🙀")
-            assert(stateWithEmojiChanged.saveButtonState == ModifySettingState.ButtonState.Enabled)
+            assert(stateWithEmojiChanged.saveButtonState == ButtonState.Enabled)
             
             cancelAndConsumeRemainingEvents()
         }
@@ -143,13 +151,13 @@ class ModifySettingPresenterTest {
         whenever(phoneNumberValidator.isValidPhoneNumber("NotAPhone")).thenReturn(false)
 
         presenter.test {
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
             state.onPhoneNumberChanged("NotAPhone")
             runCurrent()
 
-            val stateWithChangedPhoneNumber = expectMostRecentItem() as ModifySettingState.HomepageActionState
+            val stateWithChangedPhoneNumber = expectMostRecentItem() as HomepageActionState
             assert(stateWithChangedPhoneNumber.isPhoneNumberError)
-            assert(stateWithChangedPhoneNumber.saveButtonState == ModifySettingState.ButtonState.Disabled)
+            assert(stateWithChangedPhoneNumber.saveButtonState == ButtonState.Disabled)
             
             cancelAndConsumeRemainingEvents()
         }
@@ -165,14 +173,14 @@ class ModifySettingPresenterTest {
         whenever(phoneNumberValidator.isValidPhoneNumber("5145550123")).thenReturn(true)
 
         presenter.test {
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
             state.onPhoneNumberChanged("5145550123")
             runCurrent()
 
-            val stateWithChangedPhoneNumber = expectMostRecentItem() as ModifySettingState.HomepageActionState
+            val stateWithChangedPhoneNumber = expectMostRecentItem() as HomepageActionState
             assert(!stateWithChangedPhoneNumber.isPhoneNumberError)
             assert(stateWithChangedPhoneNumber.phoneNumber == "5145550123")
-            assert(stateWithChangedPhoneNumber.saveButtonState == ModifySettingState.ButtonState.Enabled)
+            assert(stateWithChangedPhoneNumber.saveButtonState == ButtonState.Enabled)
             
             cancelAndConsumeRemainingEvents()
         }
@@ -188,13 +196,13 @@ class ModifySettingPresenterTest {
         whenever(emojiValidator.isEmoji("X")).thenReturn(false)
 
         presenter.test {
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
             state.onEmojiChanged("X")
             runCurrent()
 
-            val stateWithError = expectMostRecentItem() as ModifySettingState.HomepageActionState
+            val stateWithError = expectMostRecentItem() as HomepageActionState
             assert(stateWithError.isEmojiError)
-            assert(stateWithError.saveButtonState == ModifySettingState.ButtonState.Disabled)
+            assert(stateWithError.saveButtonState == ButtonState.Disabled)
             
             cancelAndConsumeRemainingEvents()
         }
@@ -212,7 +220,7 @@ class ModifySettingPresenterTest {
         whenever(phoneNumberValidator.isValidPhoneNumber("5145550123")).thenReturn(true)
 
         presenter.test {
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
             state.onSaveButtonClicked()
             runCurrent()
             verify(repository).saveSetting(
@@ -235,7 +243,7 @@ class ModifySettingPresenterTest {
         whenever(phoneNumberValidator.isValidPhoneNumber("")).thenReturn(false)
 
         presenter.test {
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
             state.onChooseFromContactsClicked()
             runCurrent()
             
@@ -259,11 +267,11 @@ class ModifySettingPresenterTest {
         whenever(phoneNumberValidator.isValidPhoneNumber("5145550123")).thenReturn(true)
 
         presenter.test {
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
             state.onChooseFromContactsClicked()
             runCurrent()
 
-            val stateWithContact = expectMostRecentItem() as ModifySettingState.HomepageActionState
+            val stateWithContact = expectMostRecentItem() as HomepageActionState
             verify(permissionsRepository).requestPermission(Permission.READ_CONTACTS)
             verify(contactsRepository).pickContact()
             assert(stateWithContact.phoneNumber == "5145550123")
@@ -284,13 +292,131 @@ class ModifySettingPresenterTest {
 
         presenter.test {
             awaitItem() // Skip initial loading state
-            val state = awaitItem() as ModifySettingState.HomepageActionState
+            val state = awaitItem() as HomepageActionState
             state.onChooseFromContactsClicked()
             advanceUntilIdle()
             
             verify(permissionsRepository).requestPermission(Permission.READ_CONTACTS)
             verify(contactsRepository).pickContact()
             assert(state.phoneNumber == "initialNumber")
+        }
+    }
+
+    @Test
+    fun `presenter returns CenterWidgetState when CenterWidget is passed`() = runTest {
+        setupPresenter(Setting.CenterWidget)
+        whenever(appWidgetRepository.getAvailableWidgets()).thenReturn(emptyList())
+        whenever(repository.getSettingsFlow(Setting.CenterWidget)).thenReturn(flowOf(null))
+
+        presenter.test {
+            awaitItem() // Loading
+            val state = awaitItem()
+            assert(state is CenterWidgetState)
+        }
+    }
+
+    @Test
+    fun `CenterWidget - selecting a widget binds and saves it`() = runTest {
+        setupPresenter(Setting.CenterWidget)
+
+        val provider = WidgetProviderInfo(
+            componentName = "com.example/ClockWidget",
+            label = "Clock",
+            minWidth = 200,
+            minHeight = 100,
+        )
+        val widgetData = WidgetData(
+            widgetId = 42,
+            providerComponentName = provider.componentName,
+            width = provider.minWidth,
+            height = provider.minHeight,
+            label = provider.label,
+        )
+        whenever(appWidgetRepository.getAvailableWidgets()).thenReturn(listOf(provider))
+        whenever(repository.getSettingsFlow(Setting.CenterWidget)).thenReturn(flowOf(null))
+        whenever(appWidgetRepository.allocateWidgetId()).thenReturn(42)
+        whenever(appWidgetRepository.bindWidget(42, provider)).thenReturn(Result.success(widgetData))
+        whenever(repository.saveSetting(any<SettingData.CenterWidgetSettingData>())).thenReturn(true)
+
+        presenter.test {
+            awaitItem() // Loading
+            val loadedState = awaitItem() as CenterWidgetState
+            loadedState.onWidgetSelected(provider)
+            advanceUntilIdle()
+
+            verify(repository).saveSetting(SettingData.CenterWidgetSettingData(widgetData))
+            navigator.awaitPop()
+        }
+    }
+
+    @Test
+    fun `CenterWidget - selecting a widget removes existing widget first`() = runTest {
+        setupPresenter(Setting.CenterWidget)
+
+        val existingWidgetData = WidgetData(
+            widgetId = 7,
+            providerComponentName = "com.example/OldWidget",
+            width = 200,
+            height = 100,
+            label = "Old",
+        )
+        val provider = WidgetProviderInfo(
+            componentName = "com.example/ClockWidget",
+            label = "Clock",
+            minWidth = 200,
+            minHeight = 100,
+        )
+        val newWidgetData = WidgetData(
+            widgetId = 42,
+            providerComponentName = provider.componentName,
+            width = provider.minWidth,
+            height = provider.minHeight,
+            label = provider.label,
+        )
+        whenever(appWidgetRepository.getAvailableWidgets()).thenReturn(listOf(provider))
+        whenever(repository.getSettingsFlow(Setting.CenterWidget))
+            .thenReturn(flowOf(SettingData.CenterWidgetSettingData(existingWidgetData)))
+        whenever(appWidgetRepository.allocateWidgetId()).thenReturn(42)
+        whenever(appWidgetRepository.bindWidget(42, provider)).thenReturn(Result.success(newWidgetData))
+        whenever(repository.saveSetting(any<SettingData.CenterWidgetSettingData>())).thenReturn(true)
+
+        presenter.test {
+            awaitItem() // Loading
+            val loadedState = awaitItem() as CenterWidgetState
+            loadedState.onWidgetSelected(provider)
+            advanceUntilIdle()
+
+            verify(appWidgetRepository).removeWidget(7)
+            verify(repository).saveSetting(SettingData.CenterWidgetSettingData(newWidgetData))
+            navigator.awaitPop()
+        }
+    }
+
+    @Test
+    fun `CenterWidget - clearing widget removes bound widget and clears setting`() = runTest {
+        setupPresenter(Setting.CenterWidget)
+
+        val widgetData = WidgetData(
+            widgetId = 7,
+            providerComponentName = "com.example/ClockWidget",
+            width = 200,
+            height = 100,
+            label = "Clock",
+        )
+        whenever(appWidgetRepository.getAvailableWidgets()).thenReturn(emptyList())
+        whenever(repository.getSettingsFlow(Setting.CenterWidget))
+            .thenReturn(flowOf(SettingData.CenterWidgetSettingData(widgetData)))
+        whenever(repository.clearSetting(Setting.CenterWidget)).thenReturn(true)
+
+        presenter.test {
+            awaitItem() // Loading
+            val loadedState = awaitItem() as CenterWidgetState
+            loadedState.onClearWidget()
+            advanceUntilIdle()
+
+            verify(appWidgetRepository).removeWidget(7)
+            verify(repository).clearSetting(Setting.CenterWidget)
+            navigator.awaitPop()
         }
     }
 }
