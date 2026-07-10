@@ -45,7 +45,7 @@ modules/features/settings/
 - **App Launch Settings** - Launch behavior and animations
 - **Gesture Configuration** - Custom gesture actions
 - **Search Settings** - Search behavior and indexing
-- **Center Widget** - Select an app widget to display on the home screen
+- **Center Widget** - Select, bind, and clear an app widget for the home screen via ModifySettingScreen
 
 ### Privacy & Permissions
 - **SMS Permissions** - SMS functionality controls
@@ -79,6 +79,7 @@ This module integrates with:
 
 - **DataStore** - Modern preferences storage
 - **Jetpack Compose** - Settings UI
+- **Material Icons** - Settings screen icons
 - Features: `app-widgets`
 - Libs: `ui`, `core-ext`
 - Hilt dependency injection
