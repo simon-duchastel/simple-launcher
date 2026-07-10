@@ -54,13 +54,13 @@ class AppWidgetRepositoryImpl @Inject constructor(
         return appWidgetHost.allocateWidgetId()
     }
 
-    override suspend fun bindWidget(widgetId: Int, providerInfo: WidgetProviderInfo): Result<Unit> {
+    override suspend fun bindWidget(widgetId: Int, providerInfo: WidgetProviderInfo): Result<WidgetData> {
         return try {
             val componentName = ComponentName.unflattenFromString(providerInfo.componentName)
                 ?: return Result.failure(IllegalArgumentException("Invalid component name"))
 
             val canBind = appWidgetManager.bindAppWidgetIdIfAllowed(widgetId, componentName)
-            
+
             if (canBind) {
                 val widgetData = WidgetData(
                     widgetId = widgetId,
@@ -69,12 +69,12 @@ class AppWidgetRepositoryImpl @Inject constructor(
                     height = providerInfo.minHeight,
                     label = providerInfo.label
                 )
-                
+
                 val currentWidgets = _boundWidgets.value.toMutableList()
                 currentWidgets.add(widgetData)
                 _boundWidgets.value = currentWidgets
-                
-                Result.success(Unit)
+
+                Result.success(widgetData)
             } else {
                 // Need to request permission from user
                 Result.failure(SecurityException("Widget binding not allowed"))
