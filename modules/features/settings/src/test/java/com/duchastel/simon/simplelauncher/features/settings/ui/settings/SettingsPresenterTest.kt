@@ -25,19 +25,31 @@ class SettingsPresenterTest {
 
             val expected = listOf(
                 SettingsRow.HOMEPAGE_ACTION,
+                SettingsRow.CENTER_WIDGET,
             ).toImmutableList()
             Assert.assertEquals(expected, state.settingsRows)
         }
     }
 
     @Test
-    fun `onSettingsRowClicked navigates to modify setting screen`() = runTest {
+    fun `onSettingsRowClicked navigates to modify setting screen for homepage action`() = runTest {
         presenter.test {
             val state = awaitItem()
 
             state.onSettingsRowClick(SettingsRow.HOMEPAGE_ACTION)
             val navigatedScreen = navigator.awaitNextScreen()
             Assert.assertEquals(ModifySettingScreen(Setting.HomepageAction), navigatedScreen)
+        }
+    }
+
+    @Test
+    fun `onSettingsRowClicked navigates to modify setting screen for center widget`() = runTest {
+        presenter.test {
+            val state = awaitItem()
+
+            state.onSettingsRowClick(SettingsRow.CENTER_WIDGET)
+            val navigatedScreen = navigator.awaitNextScreen()
+            Assert.assertEquals(ModifySettingScreen(Setting.CenterWidget), navigatedScreen)
         }
     }
 }

@@ -10,11 +10,13 @@ data class SettingsState(
 ): CircuitUiState {
     enum class SettingsRow(val label: String) {
         HOMEPAGE_ACTION("Homepage Action"),
+        CENTER_WIDGET("Center Widget"),
     }
 }
 
 internal fun SettingsState.SettingsRow.toSettingDomainType(): Setting {
     return when (this) {
         SettingsState.SettingsRow.HOMEPAGE_ACTION -> Setting.HomepageAction
+        SettingsState.SettingsRow.CENTER_WIDGET -> Setting.CenterWidget
     }
 }
