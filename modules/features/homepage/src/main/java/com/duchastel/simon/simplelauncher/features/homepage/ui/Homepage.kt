@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import com.duchastel.simon.simplelauncher.libs.ui.components.rememberVerticalSlidingDrawerState
 import androidx.compose.runtime.collectAsState
@@ -21,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import com.duchastel.simon.simplelauncher.features.applist.ui.AppListScreen
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
+import com.duchastel.simon.simplelauncher.features.appwidgets.ui.widget.AppWidgetScreen
 import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionButton
 import com.duchastel.simon.simplelauncher.features.settings.SettingsActivity
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
@@ -44,6 +47,7 @@ data object HomepageScreen : Screen, Parcelable
 
 data class HomepageState(
     val homepageAction: HomepageAction?,
+    val centerWidget: WidgetData?,
     val onSettingsClicked: () -> Unit,
 ) : CircuitUiState {
     data class HomepageAction(
@@ -79,6 +83,18 @@ internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
             },
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
+                if (state.centerWidget != null) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(
+                                width = state.centerWidget.width.dp,
+                                height = state.centerWidget.height.dp,
+                            )
+                    ) {
+                        CircuitContent(AppWidgetScreen(state.centerWidget))
+                    }
+                }
                 if (state.homepageAction != null) {
                     CircuitContent(
                         HomepageActionButton(
@@ -115,13 +131,19 @@ class HomepagePresenter @Inject internal constructor(
 
     @Composable
     override fun present(): HomepageState {
-        val settings by remember {
+        val homepageSettings by remember {
             settingsRepository.getSettingsFlow(Setting.HomepageAction) ?: flowOf(null)
         }.collectAsState(null)
 
-        val homepageActionSettings = settings as? SettingData.HomepageActionSettingData
+        val centerWidgetSettings by remember {
+            settingsRepository.getSettingsFlow(Setting.CenterWidget) ?: flowOf(null)
+        }.collectAsState(null)
+
+        val homepageActionSettings = homepageSettings as? SettingData.HomepageActionSettingData
+        val centerWidgetData = (centerWidgetSettings as? SettingData.CenterWidgetSettingData)?.widgetData
         return HomepageState(
             homepageAction = homepageActionSettings?.toUiType(),
+            centerWidget = centerWidgetData,
             onSettingsClicked = {
                 val intent = SettingsActivity.newActivityIntent(context)
                 intentLauncher.startActivityAsSeparateApp(intent)

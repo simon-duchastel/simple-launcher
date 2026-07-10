@@ -63,9 +63,22 @@ class SettingsRepositoryImpl @Inject internal constructor(
         }
     }
 
+    override suspend fun clearSetting(setting: Setting): Boolean {
+        try {
+            context.dataStore.edit { preferences ->
+                preferences.remove(setting.preferenceKey())
+            }
+            return true
+        } catch (_: IOException) {
+            // if we receive an error editing the file, return false
+            return false
+        }
+    }
+
     private fun Setting.preferenceKey(): Preferences.Key<String> {
         return when (this) {
-            Setting.HomepageAction -> HOMEPAGE_ACTION
+            Setting.HomepageAction -> PreferenceKeys.HOMEPAGE_ACTION
+            Setting.CenterWidget -> PreferenceKeys.CENTER_WIDGET
         }
     }
 }
@@ -130,4 +143,9 @@ private object PreferenceKeys {
      *
      */
     val HOMEPAGE_ACTION = stringPreferencesKey("homepage_action")
+
+    /**
+     *
+     */
+    val CENTER_WIDGET = stringPreferencesKey("center_widget")
 }

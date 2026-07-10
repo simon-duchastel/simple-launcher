@@ -1,6 +1,7 @@
 package com.duchastel.simon.simplelauncher.features.homepage.ui
 
 import android.content.Context
+import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
@@ -24,10 +25,12 @@ class HomepagePresenterTest {
     @Test
     fun `presenter provides default state when no homepage action setting exists`() = runTest {
         whenever(settingsRepository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(null))
+        whenever(settingsRepository.getSettingsFlow(Setting.CenterWidget)).thenReturn(flowOf(null))
 
         presenter.test {
             val state = awaitItem()
             assert(state.homepageAction == null)
+            assert(state.centerWidget == null)
         }
     }
 
@@ -38,12 +41,34 @@ class HomepagePresenterTest {
             phoneNumber = "1234567890"
         )
         whenever(settingsRepository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(homepageActionSetting))
+        whenever(settingsRepository.getSettingsFlow(Setting.CenterWidget)).thenReturn(flowOf(null))
 
         presenter.test {
             val state = expectMostRecentItem()
 
             Assert.assertEquals("👋", state.homepageAction?.emoji)
             Assert.assertEquals("1234567890", state.homepageAction?.smsDestination)
+            Assert.assertEquals(null, state.centerWidget)
+        }
+    }
+
+    @Test
+    fun `presenter provides state with center widget when setting exists`() = runTest {
+        val widgetData = WidgetData(
+            widgetId = 1,
+            providerComponentName = "com.example/ClockWidget",
+            width = 200,
+            height = 100,
+        )
+        val centerWidgetSetting = SettingData.CenterWidgetSettingData(widgetData)
+        whenever(settingsRepository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(null))
+        whenever(settingsRepository.getSettingsFlow(Setting.CenterWidget)).thenReturn(flowOf(centerWidgetSetting))
+
+        presenter.test {
+            val state = expectMostRecentItem()
+
+            Assert.assertEquals(null, state.homepageAction)
+            Assert.assertEquals(widgetData, state.centerWidget)
         }
     }
 
@@ -55,6 +80,7 @@ class HomepagePresenterTest {
         )
         val settingsFlow = MutableStateFlow<SettingData?>(initialSetting)
         whenever(settingsRepository.getSettingsFlow(Setting.HomepageAction)).thenReturn(settingsFlow)
+        whenever(settingsRepository.getSettingsFlow(Setting.CenterWidget)).thenReturn(flowOf(null))
 
         presenter.test {
             val initialState = expectMostRecentItem()
@@ -69,6 +95,36 @@ class HomepagePresenterTest {
             val updatedState = awaitItem()
             Assert.assertEquals("🚀", updatedState.homepageAction?.emoji)
             Assert.assertEquals("0987654321", updatedState.homepageAction?.smsDestination)
+        }
+    }
+
+    @Test
+    fun `presenter updates state when center widget setting changes`() = runTest {
+        val initialWidgetData = WidgetData(
+            widgetId = 1,
+            providerComponentName = "com.example/ClockWidget",
+            width = 200,
+            height = 100,
+        )
+        val initialSetting = SettingData.CenterWidgetSettingData(initialWidgetData)
+        val settingsFlow = MutableStateFlow<SettingData?>(initialSetting)
+        whenever(settingsRepository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(null))
+        whenever(settingsRepository.getSettingsFlow(Setting.CenterWidget)).thenReturn(settingsFlow)
+
+        presenter.test {
+            val initialState = expectMostRecentItem()
+            Assert.assertEquals(initialWidgetData, initialState.centerWidget)
+
+            val updatedWidgetData = WidgetData(
+                widgetId = 2,
+                providerComponentName = "com.example/WeatherWidget",
+                width = 300,
+                height = 150,
+            )
+            settingsFlow.value = SettingData.CenterWidgetSettingData(updatedWidgetData)
+
+            val updatedState = awaitItem()
+            Assert.assertEquals(updatedWidgetData, updatedState.centerWidget)
         }
     }
 }

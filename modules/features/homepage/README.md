@@ -12,6 +12,7 @@ This feature module provides the primary user interface for the launcher, displa
 - **State Management** - ViewModel and state handling
 - **Navigation** - Screen navigation and routing
 - **Dependency Injection** - Feature-specific Hilt configuration
+- **Center Widget** - Optional app widget displayed in the center of the home screen
 
 ## Architecture
 
@@ -47,6 +48,7 @@ Uses modern Android architecture:
 
 This module integrates with:
 - **App List Feature** - Consumes app data for display
+- **App Widgets Feature** - Hosts the center widget
 - **Settings Feature** - Applies user preferences
 - **Homepage Action Feature** - Handles interaction events
 - **UI Library** - Uses shared components and theming
@@ -55,7 +57,7 @@ This module integrates with:
 
 - Jetpack Compose for UI
 - Navigation Component
-- Features: `app-list`, `settings`, `homepage-action`
+- Features: `app-list`, `app-widgets`, `settings`, `homepage-action`
 - Libs: `ui`, `core-ext`
 
 ## Testing
