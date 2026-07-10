@@ -14,6 +14,12 @@ interface SettingsRepository {
     suspend fun saveSetting(settingData: SettingData): Boolean
 
     /**
+     * Clears any stored data for the given [setting]. Returns true when the clear was successful,
+     * false otherwise.
+     */
+    suspend fun clearSetting(setting: Setting): Boolean
+
+    /**
      * Gets the data for the current, or null if there was an error. SettingData can also be null
      * if we could read the settings successfully but no settings data for that setting was stored.
      */
