@@ -2,7 +2,12 @@ package com.duchastel.simon.simplelauncher.features.homepage.ui
 
 import android.content.Context
 import android.os.Parcelable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -52,6 +57,18 @@ data class HomepageState(
 @Composable
 internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
     val drawerState = rememberVerticalSlidingDrawerState(DragAnchors.Hidden)
+    val hapticFeedback by rememberUpdatedState(LocalHapticFeedback.current)
+
+    LaunchedEffect(drawerState) {
+        var previousTarget = drawerState.targetValue
+        snapshotFlow { drawerState.targetValue }
+            .collect { targetValue ->
+                if (targetValue == DragAnchors.Expanded && previousTarget == DragAnchors.Hidden) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                }
+                previousTarget = targetValue
+            }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         VerticalSlidingDrawer(
