@@ -26,6 +26,7 @@ internal fun AppList(state: AppListState, modifier: Modifier) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(state.apps) { app ->
                 Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
                         .combinedClickable(
