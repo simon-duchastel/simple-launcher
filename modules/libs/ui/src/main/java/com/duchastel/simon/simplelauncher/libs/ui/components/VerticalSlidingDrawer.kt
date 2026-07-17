@@ -303,6 +303,29 @@ fun VerticalSlidingDrawer(
                                 if (drawerState.offset.isNaN()) return@awaitEachGesture
 
                                 val opening = drawerState.currentValue == DragAnchors.Hidden
+
+                                if (!opening) {
+                                    val tapSlop = viewConfiguration.touchSlop
+                                    var tapDelta = 0f
+                                    while (true) {
+                                        val event = awaitPointerEvent()
+                                        val change = event.changes.find { it.id == down.id }
+                                            ?: break
+                                        if (change.changedToUpIgnoreConsumed()) {
+                                            if (abs(tapDelta) < tapSlop) {
+                                                change.consume()
+                                                coroutineScope.launch {
+                                                    drawerState.animateTo(DragAnchors.Hidden)
+                                                }
+                                            }
+                                            break
+                                        }
+                                        tapDelta += change.positionChange().y
+                                        if (abs(tapDelta) >= tapSlop) break
+                                    }
+                                    return@awaitEachGesture
+                                }
+
                                 val slop = viewConfiguration.touchSlop
                                 val startOffset = drawerState.offset
                                 var totalDelta = 0f
