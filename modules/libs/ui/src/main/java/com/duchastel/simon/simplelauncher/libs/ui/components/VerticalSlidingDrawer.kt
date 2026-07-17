@@ -172,6 +172,7 @@ fun rememberVerticalSlidingDrawerState(
 fun VerticalSlidingDrawer(
     modifier: Modifier = Modifier,
     state: VerticalSlidingDrawerState = rememberVerticalSlidingDrawerState(),
+    onDismissRequest: () -> Unit = {},
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -314,9 +315,7 @@ fun VerticalSlidingDrawer(
                                         if (change.changedToUpIgnoreConsumed()) {
                                             if (abs(tapDelta) < tapSlop) {
                                                 change.consume()
-                                                coroutineScope.launch {
-                                                    drawerState.animateTo(DragAnchors.Hidden)
-                                                }
+                                                onDismissRequest()
                                             }
                                             break
                                         }
@@ -445,10 +444,18 @@ fun VerticalSlidingDrawer(
 
                                 var totalY = 0f
                                 var slopExceeded = false
+                                var upConsumed = false
                                 while (true) {
                                     val event = awaitPointerEvent()
                                     val change = event.changes.find { it.id == down.id } ?: break
-                                    if (change.changedToUpIgnoreConsumed()) break
+                                    if (change.changedToUpIgnoreConsumed()) {
+                                        if (abs(totalY) < slop) {
+                                            change.consume()
+                                            upConsumed = true
+                                            onDismissRequest()
+                                        }
+                                        break
+                                    }
 
                                     totalY += change.positionChange().y
                                     if (totalY < -slop) {
@@ -456,6 +463,7 @@ fun VerticalSlidingDrawer(
                                         break
                                     }
                                 }
+                                if (upConsumed) return@awaitEachGesture
                                 if (!slopExceeded) return@awaitEachGesture
 
                                 val velocityTracker = VelocityTracker()
