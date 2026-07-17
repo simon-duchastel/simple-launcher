@@ -35,6 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
@@ -44,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +65,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
@@ -93,6 +96,20 @@ internal fun isPointerInMargin(
     val left = center - halfSheet
     val right = center + halfSheet
     return pointerX < left || pointerX > right
+}
+
+/**
+ * Resets the scroll position whenever the drawer moves to [DragAnchors.Hidden].
+ */
+internal suspend fun resetDrawerScrollOnHide(
+    currentValueFlow: Flow<DragAnchors>,
+    resetScroll: suspend () -> Unit,
+) {
+    currentValueFlow.collect { currentValue ->
+        if (currentValue == DragAnchors.Hidden) {
+            resetScroll()
+        }
+    }
 }
 
 internal fun computeDragTarget(
@@ -198,6 +215,13 @@ fun VerticalSlidingDrawer(
         val interactionSource = remember { MutableInteractionSource() }
         val coroutineScope = rememberCoroutineScope()
         val lazyListState = rememberLazyListState()
+
+        LaunchedEffect(state, lazyListState) {
+            resetDrawerScrollOnHide(
+                currentValueFlow = snapshotFlow { state.currentValue },
+                resetScroll = { lazyListState.scrollToItem(0) },
+            )
+        }
 
         val isExpanded by remember { derivedStateOf { state.currentValue == DragAnchors.Expanded } }
         PredictiveBackHandler(enabled = isExpanded) { progress ->
