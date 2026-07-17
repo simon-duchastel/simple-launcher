@@ -35,6 +35,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +67,12 @@ enum class DragAnchors {
 }
 
 @Stable
+internal val VerticalSlidingDrawerStateSaver: Saver<VerticalSlidingDrawerState, String> =
+    Saver(
+        save = { state -> state.currentValue.name },
+        restore = { name -> VerticalSlidingDrawerState(DragAnchors.valueOf(name)) },
+    )
+
 class VerticalSlidingDrawerState(
     initialValue: DragAnchors = DragAnchors.Hidden,
 ) {
@@ -103,9 +111,10 @@ class VerticalSlidingDrawerState(
 @Composable
 fun rememberVerticalSlidingDrawerState(
     initialValue: DragAnchors = DragAnchors.Hidden,
-): VerticalSlidingDrawerState = remember {
-    VerticalSlidingDrawerState(initialValue = initialValue)
-}
+): VerticalSlidingDrawerState = rememberSaveable(
+    saver = VerticalSlidingDrawerStateSaver,
+    init = { VerticalSlidingDrawerState(initialValue = initialValue) },
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

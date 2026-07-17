@@ -24,6 +24,9 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -36,4 +39,6 @@ dependencies {
     implementation(libs.androidx.compose.uitooling)
 
     debugImplementation(libs.androidx.compose.uitooling)
+
+    testImplementation(libs.junit)
 }
