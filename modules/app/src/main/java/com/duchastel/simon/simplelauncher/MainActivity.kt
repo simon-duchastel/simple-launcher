@@ -1,5 +1,6 @@
 package com.duchastel.simon.simplelauncher
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import com.duchastel.simon.simplelauncher.features.homepage.ui.HomepageScreen
 import com.duchastel.simon.simplelauncher.libs.contacts.data.ContactsRepository
 import com.duchastel.simon.simplelauncher.libs.permissions.data.PermissionsRepository
+import com.duchastel.simon.simplelauncher.libs.ui.drawer.DrawerController
 import com.duchastel.simon.simplelauncher.libs.ui.theme.SimpleLauncherTheme
 import com.slack.circuit.backstack.rememberSaveableBackStack
 import com.slack.circuit.foundation.Circuit
@@ -30,6 +32,19 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var contactsRepository: ContactsRepository
+
+    @Inject
+    lateinit var drawerController: DrawerController
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (
+            intent.action == Intent.ACTION_MAIN &&
+            intent.hasCategory(Intent.CATEGORY_HOME)
+        ) {
+            drawerController.requestClose()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
