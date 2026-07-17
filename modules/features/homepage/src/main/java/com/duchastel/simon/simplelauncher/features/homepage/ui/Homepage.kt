@@ -26,6 +26,7 @@ import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
 import com.duchastel.simon.simplelauncher.features.appwidgets.ui.widget.AppWidgetScreen
 import com.duchastel.simon.simplelauncher.features.homepageaction.ui.HomepageActionButton
 import com.duchastel.simon.simplelauncher.features.settings.SettingsActivity
+import com.duchastel.simon.simplelauncher.libs.ui.drawer.DrawerController
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
@@ -38,6 +39,7 @@ import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.presenter.Presenter
 import com.slack.circuit.runtime.screen.Screen
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
@@ -49,6 +51,7 @@ data class HomepageState(
     val homepageAction: HomepageAction?,
     val centerWidget: WidgetData?,
     val onSettingsClicked: () -> Unit,
+    val drawerCloseRequests: Flow<Unit>,
 ) : CircuitUiState {
     data class HomepageAction(
         val emoji: String,
@@ -70,6 +73,12 @@ internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
                 }
                 previousTarget = targetValue
             }
+    }
+
+    LaunchedEffect(state.drawerCloseRequests, drawerState) {
+        state.drawerCloseRequests.collect {
+            drawerState.collapse()
+        }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -127,6 +136,7 @@ class HomepagePresenter @Inject internal constructor(
     @param:ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
     private val intentLauncher: IntentLauncher,
+    private val drawerController: DrawerController,
 ) : Presenter<HomepageState> {
 
     @Composable
@@ -148,6 +158,7 @@ class HomepagePresenter @Inject internal constructor(
                 val intent = SettingsActivity.newActivityIntent(context)
                 intentLauncher.startActivityAsSeparateApp(intent)
             },
+            drawerCloseRequests = drawerController.closeRequests,
         )
     }
 

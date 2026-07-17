@@ -5,6 +5,7 @@ import com.duchastel.simon.simplelauncher.features.appwidgets.data.WidgetData
 import com.duchastel.simon.simplelauncher.features.settings.data.Setting
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingData
 import com.duchastel.simon.simplelauncher.features.settings.data.SettingsRepository
+import com.duchastel.simon.simplelauncher.libs.ui.drawer.DrawerController
 import com.duchastel.simon.simplelauncher.intents.IntentLauncher
 import com.slack.circuit.test.test
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +21,12 @@ class HomepagePresenterTest {
     private val context: Context = mock()
     private val settingsRepository: SettingsRepository = mock()
     private val intentLauncher: IntentLauncher = mock()
-    private val presenter = HomepagePresenter(context, settingsRepository, intentLauncher)
+    private val drawerController: DrawerController = mock()
+    private val presenter = HomepagePresenter(context, settingsRepository, intentLauncher, drawerController)
+
+    init {
+        whenever(drawerController.closeRequests).thenReturn(flowOf(Unit))
+    }
 
     @Test
     fun `presenter provides default state when no homepage action setting exists`() = runTest {
