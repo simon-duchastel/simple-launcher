@@ -51,6 +51,7 @@ data class HomepageState(
     val homepageAction: HomepageAction?,
     val centerWidget: WidgetData?,
     val onSettingsClicked: () -> Unit,
+    val onRequestDrawerClose: () -> Unit,
     val drawerCloseRequests: Flow<Unit>,
 ) : CircuitUiState {
     data class HomepageAction(
@@ -85,6 +86,7 @@ internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
         VerticalSlidingDrawer(
             state = drawerState,
             modifier = Modifier.fillMaxSize(),
+            onDismissRequest = state.onRequestDrawerClose,
             drawerContent = {
                 Box(modifier = Modifier.fillMaxSize()) {
                     CircuitContent(AppListScreen)
@@ -158,6 +160,7 @@ class HomepagePresenter @Inject internal constructor(
                 val intent = SettingsActivity.newActivityIntent(context)
                 intentLauncher.startActivityAsSeparateApp(intent)
             },
+            onRequestDrawerClose = { drawerController.requestClose() },
             drawerCloseRequests = drawerController.closeRequests,
         )
     }

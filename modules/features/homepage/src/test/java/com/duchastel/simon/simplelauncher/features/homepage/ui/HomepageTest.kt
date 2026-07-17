@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 class HomepagePresenterTest {
@@ -131,6 +132,18 @@ class HomepagePresenterTest {
 
             val updatedState = awaitItem()
             Assert.assertEquals(updatedWidgetData, updatedState.centerWidget)
+        }
+    }
+
+    @Test
+    fun `presenter requests drawer close when onRequestDrawerClose is invoked`() = runTest {
+        whenever(settingsRepository.getSettingsFlow(Setting.HomepageAction)).thenReturn(flowOf(null))
+        whenever(settingsRepository.getSettingsFlow(Setting.CenterWidget)).thenReturn(flowOf(null))
+
+        presenter.test {
+            val state = expectMostRecentItem()
+            state.onRequestDrawerClose()
+            verify(drawerController).requestClose()
         }
     }
 }
