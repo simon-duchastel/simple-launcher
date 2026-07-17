@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import com.duchastel.simon.simplelauncher.libs.ui.components.rememberVerticalSlidingDrawerState
 import androidx.compose.runtime.collectAsState
@@ -63,6 +65,7 @@ data class HomepageState(
 @Composable
 internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
     val drawerState = rememberVerticalSlidingDrawerState(DragAnchors.Hidden)
+    val drawerScrollState = rememberLazyListState()
     val hapticFeedback by rememberUpdatedState(LocalHapticFeedback.current)
 
     LaunchedEffect(drawerState) {
@@ -82,9 +85,17 @@ internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
         }
     }
 
+    LaunchedEffect(drawerState, drawerScrollState) {
+        resetAppListScrollOnDrawerHide(
+            currentValueFlow = snapshotFlow { drawerState.currentValue },
+            resetScroll = { drawerScrollState.scrollToItem(0) },
+        )
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         VerticalSlidingDrawer(
             state = drawerState,
+            drawerContentScrollState = drawerScrollState,
             modifier = Modifier.fillMaxSize(),
             onDismissRequest = state.onRequestDrawerClose,
             drawerContent = {
@@ -131,6 +142,20 @@ internal fun Homepage(state: HomepageState, modifier: Modifier = Modifier) {
                 .padding(32.dp)
                 .alpha(drawerState.progress),
         )
+    }
+}
+
+/**
+ * Resets the app list scroll position whenever the drawer moves to [DragAnchors.Hidden].
+ */
+internal suspend fun resetAppListScrollOnDrawerHide(
+    currentValueFlow: Flow<DragAnchors>,
+    resetScroll: suspend () -> Unit,
+) {
+    currentValueFlow.collect { currentValue ->
+        if (currentValue == DragAnchors.Hidden) {
+            resetScroll()
+        }
     }
 }
 

@@ -82,7 +82,7 @@ a drag, preventing the inner LazyColumn from stealing the gesture mid-drag. The 
 tracks the finger directly via dispatchRawDelta(). On release the sheet settles using
 Material3 thresholds (56dp positional, 125dp/s velocity). When the drawer is open the
 inner LazyColumn scrolls normally and pulling down at the top of the list closes the
-drawer via nestedScroll coordination.
+drawer via nestedScroll coordination. The drawer content scroll state can be hoisted by callers via the optional `drawerContentScrollState` parameter, allowing consumers such as the home screen to observe or reset scroll position themselves.
 
 Follows the Material 3 bottom sheet spec: drag handle is centered with 22dp vertical
 padding (provided by BottomSheetDefaults.DragHandle()). On screens up to 640dp wide
