@@ -12,18 +12,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.duchastel.simon.simplelauncher.libs.ui.components.LocalDrawerScrollState
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun AppList(state: AppListState, modifier: Modifier) {
+    val drawerScrollState = LocalDrawerScrollState.current
+    val lazyListState = drawerScrollState ?: rememberLazyListState()
+
     Box(modifier = modifier.fillMaxSize()) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = lazyListState,
+        ) {
             items(state.apps) { app ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

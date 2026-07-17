@@ -12,12 +12,17 @@ import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,8 +34,10 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -64,6 +71,50 @@ import kotlin.math.roundToInt
 enum class DragAnchors {
     Hidden,
     Expanded,
+}
+
+/**
+ * Provides the [LazyListState] of the drawer content so the outer drawer container
+ * can forward scroll gestures from the background margins to the inner list.
+ */
+val LocalDrawerScrollState = compositionLocalOf<LazyListState?> { null }
+
+/**
+ * Returns true when [pointerX] lies outside the centered sheet area on a large screen.
+ */
+internal fun isPointerInMargin(
+    pointerX: Float,
+    maxWidthPx: Float,
+    sheetMaxWidthPx: Float,
+): Boolean {
+    if (sheetMaxWidthPx >= maxWidthPx) return false
+    val halfSheet = sheetMaxWidthPx / 2f
+    val center = maxWidthPx / 2f
+    val left = center - halfSheet
+    val right = center + halfSheet
+    return pointerX < left || pointerX > right
+}
+
+internal fun computeDragTarget(
+    opening: Boolean,
+    velocity: Float,
+    dragDistance: Float,
+    velocityThreshold: Float,
+    positionalThreshold: Float,
+): DragAnchors {
+    return if (opening) {
+        when {
+            velocity < -velocityThreshold -> DragAnchors.Expanded
+            dragDistance > positionalThreshold -> DragAnchors.Expanded
+            else -> DragAnchors.Hidden
+        }
+    } else {
+        when {
+            velocity > velocityThreshold -> DragAnchors.Hidden
+            dragDistance < -positionalThreshold -> DragAnchors.Hidden
+            else -> DragAnchors.Expanded
+        }
+    }
 }
 
 @Stable
@@ -145,6 +196,7 @@ fun VerticalSlidingDrawer(
         val flingBehavior = AnchoredDraggableDefaults.flingBehavior(drawerState)
         val interactionSource = remember { MutableInteractionSource() }
         val coroutineScope = rememberCoroutineScope()
+        val lazyListState = rememberLazyListState()
 
         val isExpanded by remember { derivedStateOf { state.currentValue == DragAnchors.Expanded } }
         PredictiveBackHandler(enabled = isExpanded) { progress ->
@@ -234,103 +286,106 @@ fun VerticalSlidingDrawer(
         // screen bottom, so the inner LazyColumn lays out items in the clipped area.
         val sheetHeight = with(density) { (maxHeightPx - expandedOffsetPx).toDp() }
 
-        Box(modifier = modifier.fillMaxSize()) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                content()
-            }
+        CompositionLocalProvider(LocalDrawerScrollState provides lazyListState) {
+            Box(modifier = modifier.fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    content()
+                }
 
-            // Raw pointerInput so the gesture is never stolen by the LazyColumn
-            // when the finger strays onto it mid-drag.
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(drawerState) {
-                        awaitEachGesture {
-                            val down = awaitFirstDown(requireUnconsumed = false)
-                            if (drawerState.offset < maxHeightPx - 1f) return@awaitEachGesture
+                // Raw pointerInput so the gesture is never stolen by the LazyColumn
+                // when the finger strays onto it mid-drag.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(drawerState) {
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false)
+                                if (drawerState.offset.isNaN()) return@awaitEachGesture
 
-                            val slop = viewConfiguration.touchSlop
-                            val startOffset = drawerState.offset
-                            var totalDelta = 0f
+                                val opening = drawerState.currentValue == DragAnchors.Hidden
+                                val slop = viewConfiguration.touchSlop
+                                val startOffset = drawerState.offset
+                                var totalDelta = 0f
 
-                            var slopExceeded = false
-                            while (true) {
-                                val event = awaitPointerEvent()
-                                val change = event.changes.find { it.id == down.id }
-                                    ?: break
-                                if (change.changedToUpIgnoreConsumed()) break
+                                var slopExceeded = false
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.find { it.id == down.id }
+                                        ?: break
+                                    if (change.changedToUpIgnoreConsumed()) break
 
-                                totalDelta += change.positionChange().y
-                                if (totalDelta < -slop) {
-                                    change.consume()
-                                    slopExceeded = true
-                                    break
+                                    totalDelta += change.positionChange().y
+                                    if (opening && totalDelta < -slop) {
+                                        change.consume()
+                                        slopExceeded = true
+                                        break
+                                    }
+                                    if (!opening && totalDelta > slop) {
+                                        change.consume()
+                                        slopExceeded = true
+                                        break
+                                    }
                                 }
-                            }
 
-                            if (!slopExceeded) return@awaitEachGesture
+                                if (!slopExceeded) return@awaitEachGesture
 
-                            val velocityTracker = VelocityTracker()
-                            while (true) {
-                                val event = awaitPointerEvent()
-                                val change = event.changes.find { it.id == down.id }
-                                    ?: break
-                                if (change.changedToUpIgnoreConsumed()) break
+                                val velocityTracker = VelocityTracker()
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.find { it.id == down.id }
+                                        ?: break
+                                    if (change.changedToUpIgnoreConsumed()) break
 
-                                val delta = change.positionChange().y
-                                change.consume()
-                                velocityTracker.addPosition(
-                                    change.uptimeMillis,
-                                    change.position
-                                )
-                                drawerState.dispatchRawDelta(delta)
-                            }
-
-                            val velocity = velocityTracker.calculateVelocity().y
-                            val currentOffset = drawerState.offset
-                            val dragDistance = startOffset - currentOffset
-
-                            val target = when {
-                                velocity > velocityThreshold -> DragAnchors.Hidden
-                                velocity < -velocityThreshold -> DragAnchors.Expanded
-                                dragDistance > positionalThreshold -> DragAnchors.Expanded
-                                else -> DragAnchors.Hidden
-                            }
-
-                            coroutineScope.launch {
-                                drawerState.anchoredDrag {
-                                    val anim = Animatable(
-                                        currentOffset,
-                                        Float.VectorConverter
+                                    val delta = change.positionChange().y
+                                    change.consume()
+                                    velocityTracker.addPosition(
+                                        change.uptimeMillis,
+                                        change.position
                                     )
-                                    anim.animateTo(
-                                        targetValue = drawerState.anchors.positionOf(target),
-                                        animationSpec = tween(
-                                            durationMillis = 300,
-                                            easing = FastOutSlowInEasing
-                                        ),
-                                        initialVelocity = velocity,
-                                    ) {
-                                        dragTo(value)
+                                    drawerState.dispatchRawDelta(delta)
+                                }
+
+                                val velocity = velocityTracker.calculateVelocity().y
+                                val currentOffset = drawerState.offset
+                                val dragDistance = startOffset - currentOffset
+
+                                val target = computeDragTarget(
+                                    opening = opening,
+                                    velocity = velocity,
+                                    dragDistance = dragDistance,
+                                    velocityThreshold = velocityThreshold,
+                                    positionalThreshold = positionalThreshold,
+                                )
+
+                                coroutineScope.launch {
+                                    drawerState.anchoredDrag {
+                                        val anim = Animatable(
+                                            currentOffset,
+                                            Float.VectorConverter
+                                        )
+                                        anim.animateTo(
+                                            targetValue = drawerState.anchors.positionOf(target),
+                                            animationSpec = tween(
+                                                durationMillis = 300,
+                                                easing = FastOutSlowInEasing
+                                            ),
+                                            initialVelocity = velocity,
+                                        ) {
+                                            dragTo(value)
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-            )
+                )
 
-            val drawerAlpha = state.progress
+                val drawerAlpha = state.progress
 
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                Surface(
+                Box(
                     modifier = Modifier
-                        .then(if (isLargeScreen) Modifier.width(BottomSheetDefaults.SheetMaxWidth) else Modifier.fillMaxWidth())
+                        .fillMaxWidth()
                         .height(sheetHeight)
                         .offset { IntOffset(0, drawerState.offset.roundToInt()) }
-                        .alpha(drawerAlpha)
                         .anchoredDraggable(
                             state = drawerState,
                             orientation = Orientation.Vertical,
@@ -338,15 +393,92 @@ fun VerticalSlidingDrawer(
                             reverseDirection = false,
                             interactionSource = interactionSource,
                         )
-                        .nestedScroll(nestedScrollConnection),
-                    shape = BottomSheetDefaults.ExpandedShape,
+                        .nestedScroll(nestedScrollConnection)
+                        .pointerInput(
+                            lazyListState,
+                            drawerState,
+                            isLargeScreen,
+                            density,
+                            maxWidthDp,
+                        ) {
+                            val slop = viewConfiguration.touchSlop
+                            val sheetMaxWidthPx = with(density) {
+                                BottomSheetDefaults.SheetMaxWidth.toPx()
+                            }
+                            val maxWidthPx = with(density) { maxWidthDp.toPx() }
+
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false)
+                                if (!isLargeScreen || drawerState.currentValue != DragAnchors.Expanded) {
+                                    return@awaitEachGesture
+                                }
+
+                                if (!isPointerInMargin(
+                                        pointerX = down.position.x,
+                                        maxWidthPx = maxWidthPx,
+                                        sheetMaxWidthPx = sheetMaxWidthPx,
+                                    )
+                                ) return@awaitEachGesture
+
+                                var totalY = 0f
+                                var slopExceeded = false
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.find { it.id == down.id } ?: break
+                                    if (change.changedToUpIgnoreConsumed()) break
+
+                                    totalY += change.positionChange().y
+                                    if (totalY < -slop) {
+                                        slopExceeded = true
+                                        break
+                                    }
+                                }
+                                if (!slopExceeded) return@awaitEachGesture
+
+                                val velocityTracker = VelocityTracker()
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.find { it.id == down.id } ?: break
+                                    if (change.changedToUpIgnoreConsumed()) break
+
+                                    val deltaY = change.positionChange().y
+                                    if (deltaY != 0f) {
+                                        change.consume()
+                                        velocityTracker.addPosition(
+                                            change.uptimeMillis,
+                                            change.position,
+                                        )
+                                        coroutineScope.launch {
+                                            lazyListState.scrollBy(-deltaY)
+                                        }
+                                    }
+                                }
+
+                                val velocity = velocityTracker.calculateVelocity().y
+                                val minFlingVelocity = with(density) { 100.dp.toPx() }
+                                if (abs(velocity) > minFlingVelocity) {
+                                    coroutineScope.launch {
+                                        lazyListState.animateScrollBy(-velocity * 0.1f)
+                                    }
+                                }
+                            }
+                        },
+                    contentAlignment = Alignment.TopCenter,
                 ) {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        BottomSheetDefaults.DragHandle(
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                        Box(modifier = Modifier.weight(1f)) {
-                            drawerContent()
+                    Surface(
+                        modifier = Modifier
+                            .then(if (isLargeScreen) Modifier.width(BottomSheetDefaults.SheetMaxWidth) else Modifier.fillMaxWidth())
+                            .fillMaxHeight()
+                            .alpha(drawerAlpha),
+                        shape = BottomSheetDefaults.ExpandedShape,
+                    ) {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            BottomSheetDefaults.DragHandle(
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                            Box(modifier = Modifier.weight(1f)) {
+                                drawerContent()
+                            }
                         }
                     }
                 }
