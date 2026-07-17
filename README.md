@@ -34,7 +34,7 @@ simple-launcher/
 ### Prerequisites
 - Android Studio Hedgehog | 2023.1.1 or later
 - JDK 17+
-- Android SDK with minimum API level 24+
+- Android SDK with minimum API level 26+
 - Kotlin 1.9+
 
 ### Quick Start

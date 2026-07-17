@@ -10,7 +10,7 @@ This document outlines the technologies, frameworks, and libraries used in the S
 - **Android Gradle Plugin** - Android-specific build configuration
 
 ### Android Framework
-- **Android SDK** - Target API level 34+, minimum API level 24+
+- **Android SDK** - Target API level 37+, minimum API level 26+
 - **Jetpack Compose** - Modern declarative UI toolkit
 - **Material Design 3** - Design system and components
 
@@ -55,10 +55,10 @@ plugins {
 }
 
 android {
-    compileSdk = 34
+    compileSdk = 37
     defaultConfig {
-        minSdk = 24
-        targetSdk = 34
+        minSdk = 26
+        targetSdk = 37
     }
     
     compileOptions {
