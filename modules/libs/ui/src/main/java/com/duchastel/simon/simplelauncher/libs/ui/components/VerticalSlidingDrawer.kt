@@ -173,6 +173,7 @@ fun VerticalSlidingDrawer(
     modifier: Modifier = Modifier,
     state: VerticalSlidingDrawerState = rememberVerticalSlidingDrawerState(),
     onDismissRequest: () -> Unit = {},
+    drawerContentScrollState: LazyListState = rememberLazyListState(),
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -197,7 +198,7 @@ fun VerticalSlidingDrawer(
         val flingBehavior = AnchoredDraggableDefaults.flingBehavior(drawerState)
         val interactionSource = remember { MutableInteractionSource() }
         val coroutineScope = rememberCoroutineScope()
-        val lazyListState = rememberLazyListState()
+        val lazyListState = drawerContentScrollState
 
         val isExpanded by remember { derivedStateOf { state.currentValue == DragAnchors.Expanded } }
         PredictiveBackHandler(enabled = isExpanded) { progress ->

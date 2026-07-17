@@ -36,6 +36,7 @@ The homepage provides:
 - **Recent Apps** - Quick access to frequently used apps
 - **Customization** - Layout and theme options
 - **Gesture Support** - Touch interactions and navigation
+- **App List Scroll Reset** - The app list's scroll position resets to the top whenever the drawer is closed, so reopening it starts at the first app
 
 ## State Management
 
