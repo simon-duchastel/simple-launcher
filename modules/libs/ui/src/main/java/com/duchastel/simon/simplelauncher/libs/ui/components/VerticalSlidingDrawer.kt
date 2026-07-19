@@ -92,7 +92,7 @@ internal fun isPointerInMargin(
     val center = maxWidthPx / 2f
     val left = center - halfSheet
     val right = center + halfSheet
-    return pointerX < left || pointerX > right
+    return pointerX !in left..right
 }
 
 internal fun computeDragTarget(
